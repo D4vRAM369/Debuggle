@@ -1,6 +1,29 @@
 /* Tailwind CSS v4 */
 @import "tailwindcss";
 
+/* ── Fuente Geist (local, sin Google Fonts) ────────────────────────────────── */
+@font-face {
+  font-family: 'Geist';
+  src: url('./assets/fonts/Geist-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Geist';
+  src: url('./assets/fonts/Geist-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Geist';
+  src: url('./assets/fonts/Geist-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Tema de syntax highlighting — Atom One Dark (highlight.js) */
 @import "highlight.js/styles/atom-one-dark.css";
 

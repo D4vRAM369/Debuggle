@@ -29,8 +29,6 @@ const NAV_ITEMS: NavItem[] = [
 const CONFIG_ITEM: NavItem = { id: 'config', label: 'Config', icon: Settings2 }
 
 // ── Componente de ítem de navegación ────────────────────────────────────────
-// Sidebar solo iconos: ahorra ~130px de ancho horizontal.
-// El label aparece como tooltip nativo del OS (title attribute).
 interface NavButtonProps {
   item:     NavItem
   isActive: boolean
@@ -43,17 +41,17 @@ function NavButton({ item, isActive, onClick, dot }: NavButtonProps): JSX.Elemen
   return (
     <button
       onClick={onClick}
-      title={item.label}   // tooltip nativo al hacer hover
       className={cn(
-        // Base: centrado, tamaño fijo, transición
-        'relative flex items-center justify-center w-full p-2.5 rounded-md transition-colors',
+        // Base: fila con icono + label, transición suave
+        'relative flex items-center gap-2.5 w-full px-2.5 py-2 rounded-md transition-colors text-left',
         // Estado inactivo
         'text-muted-foreground hover:text-foreground hover:bg-accent',
-        // Estado activo: borde izquierdo + fondo
-        isActive && 'bg-primary/10 text-primary border-l-2 border-l-primary'
+        // Estado activo: borde izquierdo + fondo + color primario
+        isActive && 'bg-primary/10 text-primary border-l-2 border-l-primary pl-[10px]'
       )}
     >
-      <Icon className="size-[18px] shrink-0" />
+      <Icon className="size-[15px] shrink-0" />
+      <span className="text-xs font-medium leading-none truncate">{item.label}</span>
       {/* Punto indicador: Chat tiene contexto cargado */}
       {dot && (
         <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-primary" />
@@ -97,19 +95,25 @@ export function AppShell({
   }
 
   return (
-    // Layout raíz: sidebar (solo iconos, 48px) + contenido
+    // Layout raíz: sidebar (160px) + contenido
     <div className="flex h-screen bg-background overflow-hidden">
 
-      {/* ── Sidebar — solo iconos ── */}
-      <aside className="w-12 shrink-0 flex flex-col border-r border-border bg-card">
+      {/* ── Sidebar — icono + label ── */}
+      <aside className="w-40 shrink-0 flex flex-col border-r border-border bg-card">
 
-        {/* Logo — solo el icono */}
-        <div className="flex items-center justify-center py-3.5 border-b border-border">
-          <span className="text-lg leading-none">🐛</span>
+        {/* Header — logo + nombre de la app */}
+        <div className="flex items-center gap-2.5 px-3 py-3.5 border-b border-border">
+          <span className="text-lg leading-none select-none">🐛</span>
+          <span
+            className="text-sm font-semibold tracking-tight text-foreground leading-none"
+            style={{ fontFamily: "'Geist', sans-serif", fontWeight: 600 }}
+          >
+            Debuggle
+          </span>
         </div>
 
         {/* Navegación principal */}
-        <nav className="flex flex-col gap-0.5 p-1 flex-1">
+        <nav className="flex flex-col gap-0.5 p-1.5 flex-1">
           {NAV_ITEMS.map((item) => (
             <NavButton
               key={item.id}
@@ -122,7 +126,7 @@ export function AppShell({
         </nav>
 
         {/* Config — fijada al fondo del sidebar */}
-        <div className="p-1 border-t border-border">
+        <div className="p-1.5 border-t border-border">
           <NavButton
             item={CONFIG_ITEM}
             isActive={activeTab === 'config'}
