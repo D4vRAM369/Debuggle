@@ -121,9 +121,21 @@ export function PatternsPage(): JSX.Element {
 
   const repeatedList = [...repeatedEntries.values()].sort((a, b) => b.count - a.count)
 
-  // ── Estado vacío ─────────────────────────────────────────────────────────────
+  // ── Estados de carga y vacío ─────────────────────────────────────────────────
 
-  if (!loading && entries.length === 0) {
+  // IMPORTANTE: el loading check debe ir ANTES del render principal.
+  // Sin él, React renderiza las StatCards con entries=[] (valores 0/null)
+  // durante los ~100ms del IPC antes de recibir la respuesta → flash visible.
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full gap-2 text-muted-foreground">
+        <RefreshCw size={16} className="animate-spin opacity-40" />
+        <span className="text-sm opacity-40">Cargando patrones…</span>
+      </div>
+    )
+  }
+
+  if (entries.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-3 text-muted-foreground">
         <BarChart2 size={36} className="opacity-40" />
