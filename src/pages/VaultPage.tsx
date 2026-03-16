@@ -157,24 +157,23 @@ export function VaultPage({ onAskAboutThis }: VaultPageProps): JSX.Element {
               </Badge>
             )}
           </div>
-          {/* Buscador */}
-          <div className="relative">
-            <Search className="size-3.5 text-muted-foreground absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          {/* Buscador — flex: icono + input + botón limpiar, sin absolute */}
+          <div className={cn(
+            'flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-input bg-background',
+            'focus-within:ring-1 focus-within:ring-ring'
+          )}>
+            <Search className="size-3.5 text-muted-foreground shrink-0" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Buscar error o lenguaje..."
-              className={cn(
-                'w-full pl-8 pr-7 py-1.5 text-xs rounded-md border border-input',
-                'bg-background text-foreground placeholder:text-muted-foreground',
-                'focus:outline-none focus:ring-1 focus:ring-ring'
-              )}
+              className="flex-1 min-w-0 text-xs bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none"
             />
             {search && (
               <button
                 onClick={() => setSearch('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground hover:text-foreground shrink-0"
               >
                 <X className="size-3" />
               </button>
