@@ -1,0 +1,16 @@
+node_modules/
+out/
+release/
+dist/
+.env
+.env.local
+*.log
+
+# Build artifacts de TypeScript
+*.tsbuildinfo
+
+# Documentación local (PBL, planes, exports — no forman parte del código)
+docs/
+
+# Carpeta interna de Claude
+.letta/
