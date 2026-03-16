@@ -91,8 +91,23 @@ pnpm test
 ```bash
 pnpm build
 pnpm electron-builder
-# Output: release/ (.exe on Windows, .dmg on macOS, .AppImage on Linux)
 ```
+
+Outputs in `release/`:
+
+| Platform | Format | Notes |
+|---|---|---|
+| Windows | `.exe` (NSIS) | Built on Windows |
+| macOS | `.dmg` + `.zip` | x64 + Apple Silicon (arm64) |
+| Linux | `.AppImage` | Universal, no install needed |
+| Linux | `.deb` | Ubuntu, Debian, Linux Mint |
+| Linux | `.rpm` | Fedora, openSUSE, RHEL |
+| Linux | `.flatpak` | Sandboxed, all distros — requires `flatpak-builder` |
+
+> **Linux build notes:**
+> - `.deb` requires `fakeroot` → `sudo apt install fakeroot`
+> - `.rpm` requires `rpm-build` → `sudo dnf install rpm-build`
+> - `.flatpak` requires `flatpak-builder` + `org.freedesktop.Platform//23.08` runtime
 
 ---
 

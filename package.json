@@ -54,16 +54,48 @@
       "output": "release"
     },
     "win": {
-      "target": "nsis"
+      "target": [
+        { "target": "nsis", "arch": ["x64"] }
+      ]
     },
     "mac": {
-      "target": "dmg"
+      "target": [
+        { "target": "dmg",  "arch": ["x64", "arm64"] },
+        { "target": "zip",  "arch": ["x64", "arm64"] }
+      ]
     },
     "linux": {
       "target": [
-        "AppImage",
-        "deb"
+        { "target": "AppImage", "arch": ["x64"] },
+        { "target": "deb",      "arch": ["x64"] },
+        { "target": "rpm",      "arch": ["x64"] },
+        { "target": "flatpak",  "arch": ["x64"] }
+      ],
+      "category": "Development"
+    },
+    "flatpak": {
+      "baseVersion": "23.08",
+      "runtimeVersion": "23.08",
+      "sdk": "org.freedesktop.Sdk",
+      "runtime": "org.freedesktop.Platform",
+      "branch": "stable",
+      "finishArgs": [
+        "--share=ipc",
+        "--socket=x11",
+        "--socket=wayland",
+        "--socket=pulseaudio",
+        "--share=network",
+        "--device=dri",
+        "--filesystem=home",
+        "--talk-name=org.freedesktop.secrets",
+        "--talk-name=org.gnome.keyring.*"
       ]
+    },
+    "deb": {
+      "depends": ["libsecret-1-0"]
+    },
+    "rpm": {
+      "depends": ["libsecret"]
     }
   }
 }
