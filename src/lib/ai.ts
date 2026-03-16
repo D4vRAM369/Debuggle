@@ -47,7 +47,7 @@ Cuando el usuario te pega un error, log o snippet de código, debes analizarlo y
   "explanation": "explicación adaptada al nivel del usuario",
   "solution": "pasos concretos y claros para solucionar el error",
   "terms": ["array", "de", "términos", "técnicos", "clave", "del", "error"],
-  "correctedCode": "código corregido con comentarios — OMITIR este campo si no aplica"
+  "correctedCode": "código corregido con comentarios — OMITIR este campo si no aplica. IMPORTANTE: usa saltos de línea reales (\\n) en el código, nunca pongas todo en una sola línea"
 }
 
 Criterios de severidad:

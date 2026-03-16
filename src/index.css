@@ -1,6 +1,9 @@
 /* Tailwind CSS v4 */
 @import "tailwindcss";
 
+/* Tema de syntax highlighting — Atom One Dark (highlight.js) */
+@import "highlight.js/styles/atom-one-dark.css";
+
 /* Animaciones de shadcn (modals, dropdowns, tooltips) */
 @import "tw-animate-css";
 
@@ -97,3 +100,9 @@ body {
   display: flex;
   flex-direction: column;
 }
+
+/* Scrollbar fino estilo dark — aplica a toda la app */
+::-webkit-scrollbar              { width: 6px; height: 6px; }
+::-webkit-scrollbar-track        { background: transparent; }
+::-webkit-scrollbar-thumb        { background: oklch(0.4 0 0 / 50%); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover  { background: oklch(0.55 0 0 / 70%); }

@@ -46,8 +46,8 @@ function NavButton({ item, isActive, onClick, dot }: NavButtonProps): JSX.Elemen
         'flex items-center gap-3 w-full px-3 py-2 rounded-md text-sm transition-colors relative',
         // Estado inactivo: texto apagado, hover sutil
         'text-muted-foreground hover:text-foreground hover:bg-accent',
-        // Estado activo: fondo y texto destacados
-        isActive && 'bg-primary/10 text-primary font-medium'
+        // Estado activo: borde izquierdo + fondo y texto destacados
+        isActive && 'bg-primary/10 text-primary font-medium border-l-2 border-l-primary pl-[10px]'
       )}
     >
       <Icon className="size-4 shrink-0" />

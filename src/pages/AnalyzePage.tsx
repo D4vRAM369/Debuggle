@@ -15,6 +15,7 @@ import {
 } from '@/lib/analyze'
 import { analyzeWithAI } from '@/lib/ai'
 import { type ProviderId, getProvider, DEFAULT_PROVIDER_ID, getDefaultModel } from '@/lib/providers'
+import { CodeBlock } from '@/components/ui/CodeBlock'
 
 // ── Selector de nivel ────────────────────────────────────────────────────────
 const LEVELS: { id: Level; label: string }[] = [
@@ -62,41 +63,6 @@ const SEVERITY_LABELS: Record<Severity, string> = {
   low: 'Bajo', medium: 'Medio', high: 'Alto', critical: 'Crítico',
 }
 
-// ── Bloque de corrección sugerida ────────────────────────────────────────────
-function CorrectedCode({ code, language }: { code: string; language: string }): JSX.Element {
-  const [copied, setCopied] = useState(false)
-
-  function handleCopy(): void {
-    navigator.clipboard.writeText(code)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
-  return (
-    <div className="px-6 pb-2 space-y-2">
-      <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-          🔧 Corrección sugerida
-        </p>
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="text-xs">{language}</Badge>
-          <button
-            onClick={handleCopy}
-            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            {copied
-              ? <><Check className="size-3 text-emerald-500" /> Copiado</>
-              : <><Copy className="size-3" /> Copiar</>
-            }
-          </button>
-        </div>
-      </div>
-      <pre className="bg-zinc-950 border border-border rounded-md p-4 text-xs font-mono text-foreground overflow-x-auto leading-relaxed whitespace-pre">
-        {code}
-      </pre>
-    </div>
-  )
-}
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 interface AnalyzePageProps {
@@ -367,7 +333,12 @@ export function AnalyzePage({ onAskAboutThis }: AnalyzePageProps): JSX.Element {
             {result.correctedCode && (
               <>
                 <Separator />
-                <CorrectedCode code={result.correctedCode} language={result.language} />
+                <div className="px-6 pb-4 space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    🔧 Corrección sugerida
+                  </p>
+                  <CodeBlock code={result.correctedCode} language={result.language} />
+                </div>
               </>
             )}
 

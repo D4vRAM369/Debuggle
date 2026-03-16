@@ -10,7 +10,7 @@
 import { useState, useEffect } from 'react'
 import {
   BookOpen, Search, Trash2, MessageSquare,
-  Copy, Check, Loader2, X
+  Loader2, X
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -18,6 +18,7 @@ import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
 import type { VaultMeta, VaultEntry } from '@/types/api'
 import type { AnalysisResult, Severity } from '@/lib/analyze'
+import { CodeBlock } from '@/components/ui/CodeBlock'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -70,41 +71,7 @@ const LEVEL_LABELS: Record<string, string> = {
   novato: 'Novato', medio: 'Medio', experto: 'Experto',
 }
 
-// ── Componente: bloque de código con copia ────────────────────────────────────
-function CodeBlock({ code, language }: { code: string; language: string }): JSX.Element {
-  const [copied, setCopied] = useState(false)
 
-  function handleCopy(): void {
-    navigator.clipboard.writeText(code)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
-  return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-          🔧 Corrección sugerida
-        </p>
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="text-xs">{language}</Badge>
-          <button
-            onClick={handleCopy}
-            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            {copied
-              ? <><Check className="size-3 text-emerald-500" /> Copiado</>
-              : <><Copy className="size-3" /> Copiar</>
-            }
-          </button>
-        </div>
-      </div>
-      <pre className="bg-zinc-950 border border-border rounded-md p-3 text-xs font-mono text-foreground overflow-x-auto leading-relaxed whitespace-pre">
-        {code}
-      </pre>
-    </div>
-  )
-}
 
 // ── Props ──────────────────────────────────────────────────────────────────────
 interface VaultPageProps {
@@ -379,7 +346,12 @@ export function VaultPage({ onAskAboutThis }: VaultPageProps): JSX.Element {
               {selected.correctedCode && (
                 <>
                   <Separator />
-                  <CodeBlock code={selected.correctedCode} language={selected.language} />
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                      🔧 Corrección sugerida
+                    </p>
+                    <CodeBlock code={selected.correctedCode} language={selected.language} />
+                  </div>
                 </>
               )}
 
