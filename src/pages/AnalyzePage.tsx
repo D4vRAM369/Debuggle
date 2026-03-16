@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Sparkles, Trash2, BookmarkPlus, Loader2, Copy, Check, AlertCircle, Cpu } from 'lucide-react'
+import { Sparkles, Trash2, BookmarkPlus, BookmarkCheck, Loader2, Copy, Check, AlertCircle, Cpu, MessageSquare } from 'lucide-react'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -98,8 +98,14 @@ function CorrectedCode({ code, language }: { code: string; language: string }): 
   )
 }
 
+// ── Props ─────────────────────────────────────────────────────────────────────
+interface AnalyzePageProps {
+  /** Callback invocado al pulsar "Preguntar sobre esto" — navega al Chat con contexto */
+  onAskAboutThis: (result: AnalysisResult) => void
+}
+
 // ── Pantalla Analizar ────────────────────────────────────────────────────────
-export function AnalyzePage(): JSX.Element {
+export function AnalyzePage({ onAskAboutThis }: AnalyzePageProps): JSX.Element {
   const [input,        setInput]     = useState('')
   const [level,        setLevel]     = useState<Level>('medio')
   const [isAnalyzing,  setAnalyzing] = useState(false)
@@ -107,6 +113,8 @@ export function AnalyzePage(): JSX.Element {
   const [detectedLang, setLang]      = useState<string | null>(null)
   const [error,        setError]     = useState<string | null>(null)
   const [usedMock,     setUsedMock]  = useState(false)
+  const [isSaving,     setIsSaving]  = useState(false)
+  const [savedOk,      setSavedOk]   = useState(false)
 
   // Configuración activa (se carga desde prefs al montar)
   const [activeProvider, setActiveProvider] = useState<ProviderId>(DEFAULT_PROVIDER_ID)
@@ -176,11 +184,36 @@ export function AnalyzePage(): JSX.Element {
     }
   }
 
+  async function handleSave(): Promise<void> {
+    if (!result || isSaving || usedMock) return
+    setIsSaving(true)
+    try {
+      await window.api.vault.save({
+        language:      result.language,
+        errorType:     result.errorType,
+        severity:      result.severity,
+        level,
+        input,
+        explanation:   result.explanation,
+        solution:      result.solution,
+        terms:         result.terms,
+        correctedCode: result.correctedCode,
+      })
+      setSavedOk(true)
+      setTimeout(() => setSavedOk(false), 3000)
+    } catch (err) {
+      console.error('[vault:save] Error:', err)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
   function handleClear(): void {
     setInput('')
     setResult(null)
     setLang(null)
     setError(null)
+    setSavedOk(false)
   }
 
   async function handleSwitchLevel(): Promise<void> {
@@ -338,16 +371,39 @@ export function AnalyzePage(): JSX.Element {
               </>
             )}
 
-            <CardFooter className="gap-2 pt-2">
-              <Button variant="outline" size="sm" className="gap-1.5">
-                <BookmarkPlus className="size-3.5" />
-                Guardar en Guía
+            <CardFooter className="gap-2 pt-2 flex-wrap">
+              <Button
+                variant="outline"
+                size="sm"
+                className={cn(
+                  'gap-1.5 transition-colors',
+                  savedOk && 'text-emerald-500 border-emerald-500/40 hover:bg-emerald-500/10'
+                )}
+                onClick={handleSave}
+                disabled={isSaving || usedMock || savedOk}
+                title={usedMock ? 'No disponible en modo demo' : undefined}
+              >
+                {isSaving
+                  ? <><Loader2 className="size-3.5 animate-spin" /> Guardando...</>
+                  : savedOk
+                    ? <><BookmarkCheck className="size-3.5" /> Guardado</>
+                    : <><BookmarkPlus className="size-3.5" /> Guardar en Guía</>
+                }
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5 text-primary border-primary/30 hover:bg-primary/10"
+                onClick={() => onAskAboutThis(result)}
+              >
+                <MessageSquare className="size-3.5" />
+                Preguntar sobre esto
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleSwitchLevel}
-                className="text-xs text-muted-foreground"
+                className="text-xs text-muted-foreground ml-auto"
               >
                 🔁 Ver en {level === 'novato' ? 'Medio' : level === 'medio' ? 'Experto' : 'Novato'}
               </Button>
