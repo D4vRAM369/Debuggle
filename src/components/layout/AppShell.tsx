@@ -29,6 +29,8 @@ const NAV_ITEMS: NavItem[] = [
 const CONFIG_ITEM: NavItem = { id: 'config', label: 'Config', icon: Settings2 }
 
 // ── Componente de ítem de navegación ────────────────────────────────────────
+// Sidebar solo iconos: ahorra ~130px de ancho horizontal.
+// El label aparece como tooltip nativo del OS (title attribute).
 interface NavButtonProps {
   item:     NavItem
   isActive: boolean
@@ -41,20 +43,20 @@ function NavButton({ item, isActive, onClick, dot }: NavButtonProps): JSX.Elemen
   return (
     <button
       onClick={onClick}
+      title={item.label}   // tooltip nativo al hacer hover
       className={cn(
-        // Base: layout del botón
-        'flex items-center gap-3 w-full px-3 py-2 rounded-md text-sm transition-colors relative',
-        // Estado inactivo: texto apagado, hover sutil
+        // Base: centrado, tamaño fijo, transición
+        'relative flex items-center justify-center w-full p-2.5 rounded-md transition-colors',
+        // Estado inactivo
         'text-muted-foreground hover:text-foreground hover:bg-accent',
-        // Estado activo: borde izquierdo + fondo y texto destacados
-        isActive && 'bg-primary/10 text-primary font-medium border-l-2 border-l-primary pl-[10px]'
+        // Estado activo: borde izquierdo + fondo
+        isActive && 'bg-primary/10 text-primary border-l-2 border-l-primary'
       )}
     >
-      <Icon className="size-4 shrink-0" />
-      {item.label}
+      <Icon className="size-[18px] shrink-0" />
       {/* Punto indicador: Chat tiene contexto cargado */}
       {dot && (
-        <span className="ml-auto size-1.5 rounded-full bg-primary shrink-0" />
+        <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-primary" />
       )}
     </button>
   )
@@ -95,34 +97,32 @@ export function AppShell({
   }
 
   return (
-    // Layout raíz: sidebar + contenido lado a lado
+    // Layout raíz: sidebar (solo iconos, 48px) + contenido
     <div className="flex h-screen bg-background overflow-hidden">
 
-      {/* ── Sidebar ── */}
-      <aside className="w-56 shrink-0 flex flex-col border-r border-border bg-card">
+      {/* ── Sidebar — solo iconos ── */}
+      <aside className="w-12 shrink-0 flex flex-col border-r border-border bg-card">
 
-        {/* Logo */}
-        <div className="flex items-center gap-2 px-4 py-4 border-b border-border">
-          <span className="text-xl">🐛</span>
-          <span className="font-semibold text-foreground tracking-tight">Debuggle</span>
+        {/* Logo — solo el icono */}
+        <div className="flex items-center justify-center py-3.5 border-b border-border">
+          <span className="text-lg leading-none">🐛</span>
         </div>
 
         {/* Navegación principal */}
-        <nav className="flex flex-col gap-1 p-2 flex-1">
+        <nav className="flex flex-col gap-0.5 p-1 flex-1">
           {NAV_ITEMS.map((item) => (
             <NavButton
               key={item.id}
               item={item}
               isActive={activeTab === item.id}
               onClick={() => onTabChange(item.id)}
-              // Muestra el punto si Chat tiene un análisis cargado como contexto
               dot={item.id === 'chat' && chatContext !== null}
             />
           ))}
         </nav>
 
         {/* Config — fijada al fondo del sidebar */}
-        <div className="p-2 border-t border-border">
+        <div className="p-1 border-t border-border">
           <NavButton
             item={CONFIG_ITEM}
             isActive={activeTab === 'config'}
@@ -132,7 +132,7 @@ export function AppShell({
       </aside>
 
       {/* ── Área de contenido principal ── */}
-      <main className="flex-1 overflow-hidden">
+      <main className="flex-1 min-w-0 overflow-hidden">
         {renderPage()}
       </main>
 

@@ -144,7 +144,7 @@ export function VaultPage({ onAskAboutThis }: VaultPageProps): JSX.Element {
     <div className="flex h-full overflow-hidden">
 
       {/* ── Panel izquierdo: lista ── */}
-      <aside className="w-64 shrink-0 flex flex-col border-r border-border">
+      <aside className="w-52 shrink-0 flex flex-col border-r border-border">
 
         {/* Cabecera de la lista */}
         <div className="p-3 border-b border-border space-y-2">

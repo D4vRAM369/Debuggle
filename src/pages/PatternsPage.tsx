@@ -135,18 +135,6 @@ export function PatternsPage(): JSX.Element {
     )
   }
 
-  if (entries.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full gap-3 text-muted-foreground">
-        <BarChart2 size={36} className="opacity-40" />
-        <p className="text-sm">Aún no hay entradas en tu Guía.</p>
-        <p className="text-xs text-slate-600">
-          Analiza errores y guárdalos — aquí verás tus patrones.
-        </p>
-      </div>
-    )
-  }
-
   return (
     <div className="max-w-2xl mx-auto flex flex-col gap-6 p-2">
 
