@@ -11,6 +11,11 @@
 
 // ── Tipos de dominio ─────────────────────────────────────────────────────────
 
+/** Info mínima de una actualización disponible o descargada */
+export interface UpdateInfo {
+  version: string
+}
+
 export type Severity = 'low' | 'medium' | 'high' | 'critical'
 export type Level    = 'novato' | 'medio' | 'experto'
 
@@ -91,6 +96,15 @@ export interface DebuggleAPI {
      * Guarda una preferencia de configuración en prefs.json.
      */
     setPref(key: string, value: string): Promise<void>
+  }
+
+  updater: {
+    /** Registra un listener para cuando haya una actualización disponible. */
+    onAvailable(cb: (info: UpdateInfo) => void): void
+    /** Registra un listener para cuando la actualización se ha descargado. */
+    onDownloaded(cb: (info: UpdateInfo) => void): void
+    /** Cierra la app e instala la actualización descargada. */
+    install(): Promise<void>
   }
 }
 

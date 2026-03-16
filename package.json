@@ -36,6 +36,7 @@
     "@electron-toolkit/utils": "^3.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "electron-updater": "^6.8.3",
     "gray-matter": "^4.0.3",
     "highlight.js": "^11.11.1",
     "keytar": "^7.9.0",
@@ -55,21 +56,58 @@
     },
     "win": {
       "target": [
-        { "target": "nsis", "arch": ["x64"] }
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
       ]
     },
     "mac": {
       "target": [
-        { "target": "dmg",  "arch": ["x64", "arm64"] },
-        { "target": "zip",  "arch": ["x64", "arm64"] }
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
       ]
     },
     "linux": {
       "target": [
-        { "target": "AppImage", "arch": ["x64"] },
-        { "target": "deb",      "arch": ["x64"] },
-        { "target": "rpm",      "arch": ["x64"] },
-        { "target": "flatpak",  "arch": ["x64"] }
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "deb",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "rpm",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "flatpak",
+          "arch": [
+            "x64"
+          ]
+        }
       ],
       "category": "Development"
     },
@@ -92,10 +130,20 @@
       ]
     },
     "deb": {
-      "depends": ["libsecret-1-0"]
+      "depends": [
+        "libsecret-1-0"
+      ]
     },
     "rpm": {
-      "depends": ["libsecret"]
+      "depends": [
+        "libsecret"
+      ]
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "tu-usuario-github",
+      "repo": "debuggle",
+      "releaseType": "release"
     }
   }
 }

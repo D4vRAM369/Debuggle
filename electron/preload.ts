@@ -26,7 +26,7 @@
  *         → React recibe el id como resultado de la Promise
  */
 import { contextBridge, ipcRenderer } from 'electron'
-import type { DebuggleAPI, VaultEntryInput } from '../src/types/api'
+import type { DebuggleAPI, VaultEntryInput, UpdateInfo } from '../src/types/api'
 
 // ── Implementación del puente ─────────────────────────────────────────────────
 // Cada función llama a ipcRenderer.invoke() que envía un mensaje al proceso main.
@@ -63,6 +63,20 @@ const api: DebuggleAPI = {
 
     setPref: (key: string, value: string) =>
       ipcRenderer.invoke('config:set-pref', key, value),
+  },
+
+  // ── Actualizaciones ───────────────────────────────────────────────────────
+  // Los eventos de actualización vienen del main al renderer (push, no pull).
+  // usamos ipcRenderer.on() en lugar de invoke() porque son notificaciones.
+  updater: {
+    onAvailable: (cb: (info: UpdateInfo) => void) =>
+      ipcRenderer.on('update:available', (_e, info) => cb(info)),
+
+    onDownloaded: (cb: (info: UpdateInfo) => void) =>
+      ipcRenderer.on('update:downloaded', (_e, info) => cb(info)),
+
+    install: () =>
+      ipcRenderer.invoke('update:install'),
   },
 
 }

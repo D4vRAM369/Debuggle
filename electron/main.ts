@@ -23,7 +23,37 @@ import { promises as fs } from 'fs'
 import os from 'os'
 import matter from 'gray-matter'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
+import { autoUpdater } from 'electron-updater'
 import type { VaultEntryInput, VaultMeta, VaultEntry } from '../src/types/api'
+
+// ── Auto-updater ─────────────────────────────────────────────────────────────
+// Solo activo en producción (no en dev).
+// Flujo: checkForUpdates → update-available (banner) → update-downloaded → quitAndInstall
+// Linux: funciona con AppImage. deb/rpm/flatpak usan sus propios gestores de paquetes.
+
+autoUpdater.autoDownload          = true   // descarga en segundo plano
+autoUpdater.autoInstallOnAppQuit  = true   // instala al cerrar si ya está descargada
+
+function setupAutoUpdater(win: BrowserWindow): void {
+  if (is.dev) return   // sin check en desarrollo
+
+  autoUpdater.on('update-available', (info) => {
+    win.webContents.send('update:available', { version: info.version })
+  })
+
+  autoUpdater.on('update-downloaded', (info) => {
+    win.webContents.send('update:downloaded', { version: info.version })
+  })
+
+  autoUpdater.on('error', (err) => {
+    console.error('[updater]', err.message)   // silencioso para el usuario
+  })
+
+  autoUpdater.checkForUpdates()
+  setInterval(() => autoUpdater.checkForUpdates(), 2 * 60 * 60 * 1000)  // cada 2h
+}
+
+ipcMain.handle('update:install', () => autoUpdater.quitAndInstall())
 
 // ── Directorio del vault ─────────────────────────────────────────────────────
 // ~/Debuggle/vault/  — carpeta en el home del usuario
@@ -284,6 +314,9 @@ function createWindow(): void {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
+
+  // Inicia el ciclo de comprobación de actualizaciones
+  setupAutoUpdater(mainWindow)
 }
 
 app.whenReady().then(() => {
