@@ -2,6 +2,10 @@
   "name": "debuggle",
   "version": "0.1.0",
   "description": "Tu bóveda personal de errores de programación",
+  "author": {
+    "name": "D4vRAM369",
+    "email": "d4vram369@users.noreply.github.com"
+  },
   "main": "./out/main/index.js",
   "scripts": {
     "dev": "electron-vite dev",
@@ -9,7 +13,11 @@
     "preview": "electron-vite preview",
     "postinstall": "electron-builder install-app-deps",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "pack:win": "electron-vite build && electron-builder --win",
+    "pack:linux": "electron-vite build && electron-builder --linux AppImage deb rpm",
+    "pack:linux:docker": "electron-vite build && electron-builder --linux AppImage deb rpm --docker",
+    "pack:all": "electron-vite build && electron-builder --win --linux AppImage deb rpm"
   },
   "devDependencies": {
     "@electron-toolkit/tsconfig": "^1.0.1",
@@ -51,6 +59,7 @@
   "build": {
     "appId": "dev.d4vram.debuggle",
     "productName": "Debuggle",
+    "icon": "resources/icon.png",
     "directories": {
       "output": "release"
     },
@@ -141,7 +150,7 @@
     },
     "publish": {
       "provider": "github",
-      "owner": "tu-usuario-github",
+      "owner": "D4vRAM369",
       "repo": "debuggle",
       "releaseType": "release"
     }
