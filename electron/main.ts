@@ -285,10 +285,10 @@ ipcMain.handle('config:delete-key', async (_event, service: string): Promise<voi
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
-    width: 1100,
-    height: 750,
+    width: 960,
+    height: 660,
     minWidth: 900,
-    minHeight: 600,
+    minHeight: 580,
     show: false,
     autoHideMenuBar: true,
     title: 'Debuggle',
