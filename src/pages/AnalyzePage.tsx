@@ -1,16 +1,5 @@
-import { useState, useEffect } from 'react'
-import {
-  Sparkles,
-  Trash2,
-  BookmarkPlus,
-  BookmarkCheck,
-  Loader2,
-  AlertCircle,
-  Cpu,
-  MessageSquare,
-  WandSparkles,
-  Code2,
-} from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { Sparkles, Trash2, BookmarkPlus, BookmarkCheck, Loader2, AlertCircle, Cpu, MessageSquare, ChevronDown } from 'lucide-react'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -25,12 +14,13 @@ import {
   analyzeMock,
 } from '@/lib/analyze'
 import { analyzeWithAI } from '@/lib/ai'
-import { type ProviderId, getProvider, DEFAULT_PROVIDER_ID, getDefaultModel } from '@/lib/providers'
+import { type ProviderId, getProvider, DEFAULT_PROVIDER_ID, getDefaultModel, PROVIDERS } from '@/lib/providers'
 import { CodeBlock } from '@/components/ui/CodeBlock'
 
+// ── Selector de nivel ────────────────────────────────────────────────────────
 const LEVELS: { id: Level; label: string }[] = [
-  { id: 'novato', label: 'Novato' },
-  { id: 'medio', label: 'Medio' },
+  { id: 'novato',  label: 'Novato'  },
+  { id: 'medio',   label: 'Medio'   },
   { id: 'experto', label: 'Experto' },
 ]
 
@@ -42,16 +32,16 @@ function LevelSelector({
   onChange: (l: Level) => void
 }): JSX.Element {
   return (
-    <div className="inline-flex items-center gap-1 rounded-full border border-white/8 bg-white/[0.03] p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+    <div className="flex items-center gap-1 rounded-md border border-border p-0.5 bg-muted/40">
       {LEVELS.map((lvl) => (
         <button
           key={lvl.id}
           onClick={() => onChange(lvl.id)}
           className={cn(
-            'rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200',
+            'px-3 py-1 rounded text-xs font-medium transition-colors',
             value === lvl.id
-              ? 'bg-[linear-gradient(135deg,#7292ff,#5b7cfa)] text-white shadow-[0_10px_30px_rgba(91,124,250,0.35)]'
-              : 'text-muted-foreground hover:text-white'
+              ? 'bg-background text-foreground shadow-sm'
+              : 'text-muted-foreground hover:text-foreground'
           )}
         >
           {lvl.label}
@@ -61,37 +51,124 @@ function LevelSelector({
   )
 }
 
+// ── Badge de severidad ───────────────────────────────────────────────────────
 const SEVERITY_STYLES: Record<Severity, string> = {
-  low: 'border-sky-400/20 bg-sky-400/10 text-sky-200',
-  medium: 'border-amber-400/20 bg-amber-400/10 text-amber-200',
-  high: 'border-orange-400/20 bg-orange-400/10 text-orange-200',
-  critical: 'border-rose-400/20 bg-rose-400/10 text-rose-200',
+  low:      'bg-blue-500/15   text-blue-400   border-blue-500/30',
+  medium:   'bg-yellow-500/15 text-yellow-400 border-yellow-500/30',
+  high:     'bg-orange-500/15 text-orange-400 border-orange-500/30',
+  critical: 'bg-red-500/15    text-red-400    border-red-500/30',
 }
 
 const SEVERITY_LABELS: Record<Severity, string> = {
-  low: 'Bajo',
-  medium: 'Medio',
-  high: 'Alto',
-  critical: 'Crítico',
+  low: 'Bajo', medium: 'Medio', high: 'Alto', critical: 'Crítico',
 }
 
+
+// ── Selector de proveedor + modelo ───────────────────────────────────────────
+interface ProviderPickerProps {
+  activeProvider: ProviderId
+  activeModel:    string
+  onChange:       (provider: ProviderId, model: string) => void
+}
+
+function ProviderPicker({ activeProvider, activeModel, onChange }: ProviderPickerProps): JSX.Element {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  // Cierra al hacer click fuera
+  useEffect(() => {
+    function onClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    if (open) document.addEventListener('mousedown', onClickOutside)
+    return () => document.removeEventListener('mousedown', onClickOutside)
+  }, [open])
+
+  const provider   = getProvider(activeProvider)
+  const modelLabel = provider.models.find(m => m.id === activeModel)?.label
+                  ?? provider.models[0]?.label
+                  ?? provider.name
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen(v => !v)}
+        className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+      >
+        <Cpu className="size-3" />
+        <span>{provider.name}</span>
+        <span className="text-white/20">·</span>
+        <span className="max-w-[80px] truncate opacity-70">{modelLabel}</span>
+        <ChevronDown className={cn('size-3 transition-transform', open && 'rotate-180')} />
+      </button>
+
+      {open && (
+        <div className="absolute bottom-full mb-2 right-0 z-50 w-64 rounded-xl border border-white/10 bg-[rgba(12,14,24,0.97)] shadow-2xl backdrop-blur-xl overflow-hidden">
+          <div className="max-h-72 overflow-y-auto">
+            {PROVIDERS.map((prov) => (
+              <div key={prov.id}>
+                {/* Cabecera del proveedor */}
+                <div className="px-3 pt-2.5 pb-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+                  {prov.name}
+                </div>
+                {/* Modelos del proveedor */}
+                {prov.models.map((model) => {
+                  const isActive = prov.id === activeProvider && model.id === activeModel
+                  return (
+                    <button
+                      key={model.id}
+                      onClick={() => { onChange(prov.id, model.id); setOpen(false) }}
+                      className={cn(
+                        'flex w-full items-center justify-between px-3 py-1.5 text-xs transition-colors',
+                        isActive
+                          ? 'bg-primary/15 text-primary'
+                          : 'text-muted-foreground hover:bg-white/[0.05] hover:text-foreground'
+                      )}
+                    >
+                      <span className="truncate">{model.label}</span>
+                      <span className={cn(
+                        'ml-2 shrink-0 text-[10px]',
+                        model.free ? 'text-emerald-500/70' : 'text-orange-400/60'
+                      )}>
+                        {model.context}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Props ─────────────────────────────────────────────────────────────────────
 interface AnalyzePageProps {
-  onAskAboutThis: (result: AnalysisResult) => void
+  /** Callback invocado al pulsar "Preguntar sobre esto" — navega al Chat con contexto */
+  onAskAboutThis:  (result: AnalysisResult) => void
+  /** Callback invocado cuando hay resultado nuevo — actualiza el semáforo en AppShell */
+  onAnalysisDone?: (result: AnalysisResult) => void
 }
 
-export function AnalyzePage({ onAskAboutThis }: AnalyzePageProps): JSX.Element {
-  const [input, setInput] = useState('')
-  const [level, setLevel] = useState<Level>('medio')
-  const [isAnalyzing, setAnalyzing] = useState(false)
-  const [result, setResult] = useState<AnalysisResult | null>(null)
-  const [detectedLang, setLang] = useState<string | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [usedMock, setUsedMock] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
-  const [savedOk, setSavedOk] = useState(false)
-  const [activeProvider, setActiveProvider] = useState<ProviderId>(DEFAULT_PROVIDER_ID)
-  const [activeModel, setActiveModel] = useState<string>('')
+// ── Pantalla Analizar ────────────────────────────────────────────────────────
+export function AnalyzePage({ onAskAboutThis, onAnalysisDone }: AnalyzePageProps): JSX.Element {
+  const [input,        setInput]     = useState('')
+  const [level,        setLevel]     = useState<Level>('medio')
+  const [isAnalyzing,  setAnalyzing] = useState(false)
+  const [result,       setResult]    = useState<AnalysisResult | null>(null)
+  const [detectedLang, setLang]      = useState<string | null>(null)
+  const [error,        setError]     = useState<string | null>(null)
+  const [usedMock,     setUsedMock]  = useState(false)
+  const [isSaving,     setIsSaving]  = useState(false)
+  const [savedOk,      setSavedOk]   = useState(false)
 
+  // Configuración activa (se carga desde prefs al montar)
+  const [activeProvider, setActiveProvider] = useState<ProviderId>(DEFAULT_PROVIDER_ID)
+  const [activeModel,    setActiveModel]    = useState<string>('')
+
+  // Carga las preferencias guardadas al montar el componente
   useEffect(() => {
     async function loadPrefs(): Promise<void> {
       const [savedProvider, savedModel] = await Promise.all([
@@ -99,16 +176,14 @@ export function AnalyzePage({ onAskAboutThis }: AnalyzePageProps): JSX.Element {
         window.api.config.getPref('activeModel'),
       ])
       if (savedProvider) setActiveProvider(savedProvider as ProviderId)
-      if (savedModel) setActiveModel(savedModel)
+      if (savedModel)    setActiveModel(savedModel)
     }
     loadPrefs()
   }, [])
 
+  // Detecta el lenguaje en tiempo real mientras escribes
   useEffect(() => {
-    if (input.trim().length < 10) {
-      setLang(null)
-      return
-    }
+    if (input.trim().length < 10) { setLang(null); return }
     const lang = detectLanguage(input)
     setLang(lang === 'Desconocido' ? null : lang)
   }, [input])
@@ -123,28 +198,33 @@ export function AnalyzePage({ onAskAboutThis }: AnalyzePageProps): JSX.Element {
     setUsedMock(false)
 
     try {
-      const provider = getProvider(activeProvider)
+      const provider   = getProvider(activeProvider)
       const modelToUse = activeModel || getDefaultModel(activeProvider)
 
+      // Obtener la API key si el proveedor la necesita
       let apiKey: string | null = null
       if (provider.needsKey) {
         apiKey = await window.api.config.getKey(activeProvider)
       }
 
       if (!provider.needsKey || apiKey) {
+        // ✅ IA real — proveedor configurado
         const res = await analyzeWithAI({
           input,
-          level: currentLevel,
+          level:    currentLevel,
           provider: activeProvider,
-          model: modelToUse,
-          apiKey: apiKey ?? undefined,
+          model:    modelToUse,
+          apiKey:   apiKey ?? undefined,
         })
         setResult(res)
         setUsedMock(false)
+        onAnalysisDone?.(res)
       } else {
+        // ⚠️ Sin API key → modo demo (mock)
         const res = await analyzeMock(input, currentLevel)
         setResult(res)
         setUsedMock(true)
+        onAnalysisDone?.(res)
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Error desconocido al contactar la IA'
@@ -159,14 +239,14 @@ export function AnalyzePage({ onAskAboutThis }: AnalyzePageProps): JSX.Element {
     setIsSaving(true)
     try {
       await window.api.vault.save({
-        language: result.language,
-        errorType: result.errorType,
-        severity: result.severity,
+        language:      result.language,
+        errorType:     result.errorType,
+        severity:      result.severity,
         level,
         input,
-        explanation: result.explanation,
-        solution: result.solution,
-        terms: result.terms,
+        explanation:   result.explanation,
+        solution:      result.solution,
+        terms:         result.terms,
         correctedCode: result.correctedCode,
       })
       setSavedOk(true)
@@ -193,143 +273,146 @@ export function AnalyzePage({ onAskAboutThis }: AnalyzePageProps): JSX.Element {
     await handleAnalyze(next)
   }
 
-  const providerName = getProvider(activeProvider).name
-
   return (
-    <div className="flex h-full flex-col gap-4 overflow-hidden p-5">
-      <div className="rounded-[26px] border border-white/7 bg-[linear-gradient(180deg,rgba(25,29,48,0.92),rgba(15,17,28,0.92))] shadow-[0_30px_80px_rgba(0,0,0,0.28)]">
-        <div className="flex flex-col gap-4 p-4">
-          <div className="relative">
-            <Textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder={"TypeError: Cannot read properties of undefined (reading 'map')\nat AnalyzePage (App.tsx:42:28)\no pega aquí tu error, log o snippet de código..."}
-              className="min-h-[132px] rounded-[18px] border-white/7 bg-[rgba(8,10,18,0.7)] px-4 py-3 font-mono text-[13px] leading-6 text-slate-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] placeholder:text-slate-500 focus-visible:border-primary/70 focus-visible:ring-[3px] focus-visible:ring-primary/20"
-            />
-            {detectedLang && (
-              <Badge
-                variant="outline"
-                className="pointer-events-none absolute right-3 top-3 rounded-full border-sky-400/20 bg-sky-400/10 px-2.5 py-1 text-[11px] text-sky-100"
-              >
-                {detectedLang}
-              </Badge>
-            )}
-          </div>
+    <div className="flex flex-col h-full p-5 gap-4 overflow-hidden">
 
-          <div className="flex flex-wrap items-center gap-3">
-            <LevelSelector value={level} onChange={setLevel} />
-            <div className="ml-auto flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-white/7 bg-white/[0.03] px-3 py-1.5 text-xs text-muted-foreground">
-                <Cpu className="size-3" />
-                {providerName}
-              </span>
-              {(input || result) && (
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  onClick={handleClear}
-                  title="Limpiar"
-                  className="rounded-full border border-white/7 bg-white/[0.03] text-muted-foreground hover:bg-white/[0.06] hover:text-white"
-                >
-                  <Trash2 className="size-4" />
-                </Button>
-              )}
-              <Button
-                onClick={() => handleAnalyze()}
-                disabled={!input.trim() || isAnalyzing}
-                size="lg"
-                className="rounded-full border border-primary/40 bg-[linear-gradient(135deg,#7ea2ff,#5b7cfa)] px-6 text-white shadow-[0_18px_45px_rgba(91,124,250,0.35)] hover:brightness-110"
-              >
-                {isAnalyzing
-                  ? <><Loader2 className="size-4 animate-spin" /> Analizando...</>
-                  : <><WandSparkles className="size-4" /> Analizar</>
-                }
+      {/* ── Zona de entrada ── */}
+      <div className="flex flex-col gap-3">
+
+        {/* Textarea con badge de lenguaje detectado */}
+        <div className="relative">
+          <Textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Pega aquí tu error, log o snippet de código..."
+            className="min-h-[160px] font-mono text-sm resize-none pr-4 rounded-none"
+          />
+          {detectedLang && (
+            <Badge
+              variant="outline"
+              className="absolute top-2 right-2 text-xs pointer-events-none"
+            >
+              {detectedLang}
+            </Badge>
+          )}
+        </div>
+
+        {/* Controles: nivel + selector proveedor + botón analizar */}
+        <div className="flex items-center justify-between gap-3">
+          <LevelSelector value={level} onChange={setLevel} />
+          <div className="flex items-center gap-2">
+            {/* Selector de proveedor + modelo */}
+            <ProviderPicker
+              activeProvider={activeProvider}
+              activeModel={activeModel || getDefaultModel(activeProvider)}
+              onChange={async (prov, model) => {
+                setActiveProvider(prov)
+                setActiveModel(model)
+                await Promise.all([
+                  window.api.config.setPref('activeProvider', prov),
+                  window.api.config.setPref('activeModel', model),
+                ])
+              }}
+            />
+            {(input || result) && (
+              <Button variant="ghost" size="icon" onClick={handleClear} title="Limpiar">
+                <Trash2 className="size-4" />
               </Button>
-            </div>
+            )}
+            <Button
+              onClick={() => handleAnalyze()}
+              disabled={!input.trim() || isAnalyzing}
+              className="gap-2"
+            >
+              {isAnalyzing
+                ? <><Loader2 className="size-4 animate-spin" /> Analizando...</>
+                : <><Sparkles className="size-4" /> Analizar</>
+              }
+            </Button>
           </div>
         </div>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-auto rounded-[26px] border border-white/7 bg-[linear-gradient(180deg,rgba(12,14,24,0.92),rgba(9,10,18,0.96))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+      <Separator />
+
+      {/* ── Zona de resultados ── */}
+      <div className="flex-1 overflow-auto">
+
+        {/* Estado vacío */}
         {!result && !isAnalyzing && !error && (
-          <div className="flex h-full flex-col items-center justify-center gap-3 text-muted-foreground">
-            <div className="flex size-14 items-center justify-center rounded-full border border-white/8 bg-white/[0.03]">
-              <Sparkles className="size-6 opacity-40" />
-            </div>
+          <div className="flex flex-col items-center justify-center h-full gap-2 text-muted-foreground">
+            <Sparkles className="size-8 opacity-30" />
             <p className="text-sm">El análisis aparecerá aquí</p>
           </div>
         )}
 
+        {/* Spinner mientras analiza */}
         {isAnalyzing && (
-          <div className="flex h-full flex-col items-center justify-center gap-3 text-muted-foreground">
+          <div className="flex flex-col items-center justify-center h-full gap-2 text-muted-foreground">
             <Loader2 className="size-8 animate-spin opacity-50" />
-            <p className="text-sm">Analizando con {providerName}...</p>
+            <p className="text-sm">Analizando con {getProvider(activeProvider).name}...</p>
           </div>
         )}
 
+        {/* Error de la llamada a la IA */}
         {error && !isAnalyzing && (
-          <div className="flex h-full flex-col items-center justify-center gap-3 px-8 text-muted-foreground">
+          <div className="flex flex-col items-center justify-center h-full gap-3 text-muted-foreground px-8">
             <AlertCircle className="size-8 text-red-400 opacity-70" />
-            <p className="text-center text-sm text-red-400/80">{error}</p>
-            <p className="text-center text-xs opacity-60">
+            <p className="text-sm text-center text-red-400/80">{error}</p>
+            <p className="text-xs text-center opacity-60">
               Comprueba tu API key en Config, o prueba con otro proveedor.
             </p>
           </div>
         )}
 
+        {/* Resultado */}
         {result && !isAnalyzing && (
-          <Card className="gap-0 overflow-hidden rounded-[22px] border-white/8 bg-[linear-gradient(180deg,rgba(28,31,47,0.92),rgba(20,22,34,0.94))] py-0 shadow-[0_18px_60px_rgba(0,0,0,0.25)]">
-            <CardHeader className="border-b border-white/6 pb-4 pt-5">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge className={cn('rounded-full border px-2.5 py-1 text-[11px] uppercase tracking-[0.16em]', SEVERITY_STYLES[result.severity])}>
+          <Card className="border-border">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge className={cn('border', SEVERITY_STYLES[result.severity])}>
                   {result.errorType}
                 </Badge>
-                <Badge variant="outline" className="rounded-full border-white/8 bg-white/[0.03] px-2.5 py-1 text-[11px] text-slate-200">
+                <Badge variant="outline" className="text-xs">
                   {result.language}
                 </Badge>
-                <Badge variant="outline" className={cn('rounded-full px-2.5 py-1 text-[11px]', SEVERITY_STYLES[result.severity])}>
+                <Badge variant="outline" className={cn('text-xs border', SEVERITY_STYLES[result.severity])}>
                   Severidad: {SEVERITY_LABELS[result.severity]}
                 </Badge>
                 {usedMock && (
-                  <Badge variant="outline" className="rounded-full border-dashed border-white/12 bg-white/[0.02] px-2.5 py-1 text-[11px] text-muted-foreground">
-                    modo demo - configura una API key
+                  <Badge variant="outline" className="text-xs text-muted-foreground border-dashed">
+                    modo demo — configura una API key
                   </Badge>
                 )}
               </div>
             </CardHeader>
 
-            <CardContent className="space-y-5 px-5 py-5 text-sm">
-              <div className="rounded-2xl border border-white/6 bg-white/[0.02] p-4">
-                <div className="mb-2 flex items-center gap-2">
-                  <div className="flex size-8 items-center justify-center rounded-xl bg-rose-500/10 text-rose-200">
-                    <AlertCircle className="size-4" />
-                  </div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                    Qué pasó
-                  </p>
-                </div>
-                <p className="leading-relaxed text-slate-100">{result.explanation}</p>
-              </div>
-
-              <div className="rounded-2xl border border-white/6 bg-white/[0.02] p-4">
-                <div className="mb-2 flex items-center gap-2">
-                  <div className="flex size-8 items-center justify-center rounded-xl bg-primary/12 text-primary">
-                    <Sparkles className="size-4" />
-                  </div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                    Cómo solucionarlo
-                  </p>
-                </div>
-                <p className="leading-relaxed text-slate-100">{result.solution}</p>
-              </div>
-
-              <div className="rounded-2xl border border-white/6 bg-white/[0.02] p-4">
-                <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                  Términos clave
+            <CardContent className="space-y-4 text-sm">
+              <div className="space-y-1">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  📝 Qué pasó
                 </p>
-                <div className="flex flex-wrap gap-2">
+                <p className="text-foreground leading-relaxed">{result.explanation}</p>
+              </div>
+
+              <Separator />
+
+              <div className="space-y-1">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  💡 Cómo solucionarlo
+                </p>
+                <p className="text-foreground leading-relaxed">{result.solution}</p>
+              </div>
+
+              <Separator />
+
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  🔑 Términos clave
+                </p>
+                <div className="flex flex-wrap gap-1.5">
                   {result.terms.map((term) => (
-                    <Badge key={term} variant="secondary" className="cursor-pointer rounded-full border border-white/7 bg-white/[0.04] px-3 py-1 text-[11px] text-slate-200 hover:bg-white/[0.08]">
+                    <Badge key={term} variant="secondary" className="text-xs cursor-pointer hover:bg-accent">
                       {term}
                     </Badge>
                   ))}
@@ -339,31 +422,23 @@ export function AnalyzePage({ onAskAboutThis }: AnalyzePageProps): JSX.Element {
 
             {result.correctedCode && (
               <>
-                <Separator className="bg-white/6" />
-                <div className="space-y-3 px-5 pb-5 pt-4">
-                  <div className="flex items-center gap-2">
-                    <div className="flex size-8 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-200">
-                      <Code2 className="size-4" />
-                    </div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                      Corrección sugerida
-                    </p>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Fragmento listo para probar o adaptar.
+                <Separator />
+                <div className="px-6 pb-4 space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    🔧 Corrección sugerida
                   </p>
                   <CodeBlock code={result.correctedCode} language={result.language} />
                 </div>
               </>
             )}
 
-            <CardFooter className="flex-wrap gap-2 border-t border-white/6 px-5 py-4">
+            <CardFooter className="gap-2 pt-2 flex-wrap">
               <Button
                 variant="outline"
                 size="sm"
                 className={cn(
-                  'gap-1.5 rounded-full border-white/8 bg-white/[0.03] text-slate-100 transition-colors hover:bg-white/[0.06]',
-                  savedOk && 'border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/10'
+                  'gap-1.5 transition-colors',
+                  savedOk && 'text-emerald-500 border-emerald-500/40 hover:bg-emerald-500/10'
                 )}
                 onClick={handleSave}
                 disabled={isSaving || usedMock || savedOk}
@@ -379,7 +454,7 @@ export function AnalyzePage({ onAskAboutThis }: AnalyzePageProps): JSX.Element {
               <Button
                 variant="outline"
                 size="sm"
-                className="gap-1.5 rounded-full border-primary/25 bg-primary/10 text-primary hover:bg-primary/15"
+                className="gap-1.5 text-primary border-primary/30 hover:bg-primary/10"
                 onClick={() => onAskAboutThis(result)}
               >
                 <MessageSquare className="size-3.5" />
@@ -389,9 +464,9 @@ export function AnalyzePage({ onAskAboutThis }: AnalyzePageProps): JSX.Element {
                 variant="ghost"
                 size="sm"
                 onClick={handleSwitchLevel}
-                className="ml-auto rounded-full text-xs text-muted-foreground hover:bg-white/[0.04] hover:text-white"
+                className="text-xs text-muted-foreground ml-auto"
               >
-                Ver en {level === 'novato' ? 'Medio' : level === 'medio' ? 'Experto' : 'Novato'}
+                🔁 Ver en {level === 'novato' ? 'Medio' : level === 'medio' ? 'Experto' : 'Novato'}
               </Button>
             </CardFooter>
           </Card>

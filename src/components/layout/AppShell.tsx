@@ -1,7 +1,8 @@
+import { useState } from 'react'
 import { type LucideIcon } from 'lucide-react'
 import { Bug, Zap, BookOpen, BarChart2, Settings2, MessageSquare } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import type { AnalysisResult } from '@/lib/analyze'
+import type { AnalysisResult, Severity } from '@/lib/analyze'
 import { AnalyzePage } from '@/pages/AnalyzePage'
 import { ChatPage } from '@/pages/ChatPage'
 import { VaultPage } from '@/pages/VaultPage'
@@ -78,11 +79,13 @@ export function AppShell({
   onClearChatContext,
 }: AppShellProps): JSX.Element {
 
+  const [severity, setSeverity] = useState<Severity | null>(null)
+
   // Renderiza la página activa con sus props específicas
   function renderPage(): JSX.Element {
     switch (activeTab) {
       case 'analyze':
-        return <AnalyzePage onAskAboutThis={onAskAboutThis} />
+        return <AnalyzePage onAskAboutThis={onAskAboutThis} onAnalysisDone={(r) => setSeverity(r.severity)} />
       case 'chat':
         return <ChatPage context={chatContext} onClearContext={onClearChatContext} />
       case 'vault':
@@ -134,10 +137,49 @@ export function AppShell({
 
         <section className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-r-[28px]">
           <div className="flex items-center justify-between border-b border-white/6 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),transparent)] px-5 py-3">
-            <div className="flex items-center gap-2">
-              <span className="size-3 rounded-full bg-[#ff5f57]" />
-              <span className="size-3 rounded-full bg-[#febc2e]" />
-              <span className="size-3 rounded-full bg-[#28c840]" />
+            {/* Semáforo de severidad — se activa tras analizar un error */}
+            <div className="flex items-center gap-2" title={severity ? `Severidad: ${severity}` : 'Sin análisis'}>
+              {(
+                [
+                  { sev: ['high', 'critical'] as Severity[], color: '#ff5f57', glow: '255,95,87',   label: 'Alta / Crítica' },
+                  { sev: ['medium']           as Severity[], color: '#febc2e', glow: '254,188,46',  label: 'Media'          },
+                  { sev: ['low']              as Severity[], color: '#28c840', glow: '40,200,64',   label: 'Baja'           },
+                ]
+              ).map(({ sev, color, glow, label }) => {
+                const isActive = severity !== null && sev.includes(severity as Severity)
+                const isDimmed = severity !== null && !isActive
+                return (
+                  <span
+                    key={label}
+                    className="relative flex size-3.5 items-center justify-center"
+                    title={label}
+                  >
+                    {/* Halo pulsante — solo cuando está activo */}
+                    {isActive && (
+                      <span
+                        className="absolute inset-0 rounded-full animate-ping opacity-40"
+                        style={{ backgroundColor: color }}
+                      />
+                    )}
+                    {/* Anillo exterior */}
+                    <span
+                      className="absolute inset-0 rounded-full border transition-all duration-500"
+                      style={{
+                        borderColor: isActive ? `${color}80` : 'rgba(255,255,255,0.08)',
+                        backgroundColor: isActive ? `${color}20` : 'transparent',
+                      }}
+                    />
+                    {/* Dot central */}
+                    <span
+                      className="relative size-2 rounded-full transition-all duration-500"
+                      style={{
+                        backgroundColor: isDimmed ? `${color}18` : isActive ? color : `${color}55`,
+                        boxShadow: isActive ? `0 0 10px 3px rgba(${glow},0.75)` : 'none',
+                      }}
+                    />
+                  </span>
+                )
+              })}
             </div>
             <p className="text-xs font-medium tracking-[0.18em] text-muted-foreground">Debuggle</p>
             <div className="w-14" />
