@@ -38,7 +38,7 @@ function LevelSelector({
           key={lvl.id}
           onClick={() => onChange(lvl.id)}
           className={cn(
-            'px-4 py-1.5 rounded-md text-sm font-medium transition-colors',
+            'px-5 py-2 rounded-md text-sm font-medium transition-colors',
             value === lvl.id
               ? 'bg-primary text-primary-foreground shadow-sm'
               : 'text-muted-foreground hover:text-foreground'
@@ -192,7 +192,7 @@ export function AnalyzePage({ onAskAboutThis }: AnalyzePageProps): JSX.Element {
   const providerName = getProvider(activeProvider).name
 
   return (
-    <div className="flex flex-col h-full p-5 gap-4 overflow-hidden">
+    <div className="flex flex-col h-full px-4 py-4 gap-4 overflow-hidden">
 
       {/* ── Zona de entrada ── */}
       <div className="flex flex-col gap-3">
@@ -216,8 +216,10 @@ export function AnalyzePage({ onAskAboutThis }: AnalyzePageProps): JSX.Element {
         </div>
 
         {/* Controles: nivel + indicador proveedor + botón analizar */}
-        <div className="flex items-center justify-between gap-3">
-          <LevelSelector value={level} onChange={setLevel} />
+        <div className="flex items-center justify-between gap-3 min-w-0">
+          <div className="shrink-0">
+            <LevelSelector value={level} onChange={setLevel} />
+          </div>
           <div className="flex items-center gap-2 shrink-0">
             {/* Indicador del proveedor activo */}
             <span className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -232,6 +234,7 @@ export function AnalyzePage({ onAskAboutThis }: AnalyzePageProps): JSX.Element {
             <Button
               onClick={() => handleAnalyze()}
               disabled={!input.trim() || isAnalyzing}
+              size="lg"
               className="gap-2"
             >
               {isAnalyzing

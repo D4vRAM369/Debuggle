@@ -43,11 +43,11 @@ function NavButton({ item, isActive, onClick, dot }: NavButtonProps): JSX.Elemen
       onClick={onClick}
       className={cn(
         // Base: fila con icono + label, transición suave
-        'relative flex items-center gap-3 w-full px-3 py-2.5 rounded-md transition-colors text-left',
+        'relative flex items-center gap-3 w-full px-3 py-3 rounded-md transition-colors text-left',
         // Estado inactivo
         'text-muted-foreground hover:text-foreground hover:bg-accent',
-        // Estado activo: borde izquierdo + fondo + color primario
-        isActive && 'bg-primary/10 text-primary border-l-2 border-l-primary pl-[11px]'
+        // Estado activo: fondo azul sólido + texto blanco
+        isActive && 'bg-primary text-primary-foreground hover:bg-primary'
       )}
     >
       <Icon className="size-4 shrink-0" />
@@ -103,35 +103,11 @@ export function AppShell({
 
         {/* Header — logo + nombre de la app */}
         <div className="flex items-center gap-2.5 px-3 py-3.5 border-b border-border">
-          {/* Bug with monocle — inline SVG, 20px, currentColor */}
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 20 20"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="shrink-0 text-primary"
-            aria-hidden="true"
-          >
-            {/* Body */}
-            <ellipse cx="10" cy="12" rx="5" ry="5.5" stroke="currentColor" strokeWidth="1.4" fill="none" />
-            {/* Head */}
-            <circle cx="10" cy="5.5" r="2.5" stroke="currentColor" strokeWidth="1.4" fill="none" />
-            {/* Antennae */}
-            <line x1="8" y1="3.5" x2="6" y2="1.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-            <line x1="12" y1="3.5" x2="14" y2="1.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-            {/* Legs */}
-            <line x1="5" y1="10" x2="2" y2="9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-            <line x1="5" y1="12.5" x2="2" y2="12.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-            <line x1="15" y1="10" x2="18" y2="9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-            <line x1="15" y1="12.5" x2="18" y2="12.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-            {/* Monocle lens */}
-            <circle cx="12" cy="5" r="1.5" stroke="currentColor" strokeWidth="1.1" fill="none" />
-            {/* Monocle chain dot */}
-            <circle cx="13.2" cy="6.8" r="0.5" fill="currentColor" />
-          </svg>
+          <div className="size-6 rounded-md bg-primary flex items-center justify-center shrink-0">
+            <span className="text-xs leading-none select-none">🐛</span>
+          </div>
           <span
-            className="text-[13px] font-semibold tracking-[-0.03em] text-foreground leading-none"
+            className="text-sm font-semibold tracking-tight text-foreground leading-none"
             style={{ fontFamily: "'Geist', sans-serif", fontWeight: 600 }}
           >
             Debuggle
