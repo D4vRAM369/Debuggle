@@ -45,7 +45,7 @@ function NavButton({ item, isActive, onClick, dot }: NavButtonProps): JSX.Elemen
         'group relative flex items-center gap-3 w-full rounded-xl border px-3 py-3 text-left transition-all duration-200',
         isActive
           ? 'border-primary/30 bg-[linear-gradient(135deg,rgba(92,124,250,0.28),rgba(92,124,250,0.12))] text-white shadow-[0_10px_30px_rgba(59,91,219,0.18)]'
-          : 'border-transparent text-muted-foreground hover:border-white/8 hover:bg-white/4 hover:text-white'
+          : 'border-transparent text-muted-foreground hover:border-white/8 hover:bg-white/[0.04] hover:text-white'
       )}
     >
       {isActive && (
@@ -101,7 +101,7 @@ export function AppShell({
         <aside className="flex w-52 shrink-0 flex-col border-r border-white/6 bg-[linear-gradient(180deg,rgba(16,18,31,0.96),rgba(12,14,24,0.9))]">
           <div className="flex items-center gap-3 border-b border-white/6 px-5 py-5">
             <div className="flex size-9 items-center justify-center rounded-2xl border border-primary/30 bg-[linear-gradient(135deg,rgba(92,124,250,0.28),rgba(92,124,250,0.08))] text-primary shadow-[0_12px_35px_rgba(59,91,219,0.22)]">
-              <Bug className="size-4.5" />
+              <Bug className="size-[18px]" />
             </div>
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold tracking-tight text-white">Debuggle</p>
@@ -132,7 +132,7 @@ export function AppShell({
           </div>
         </aside>
 
-        <section className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <section className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-r-[28px]">
           <div className="flex items-center justify-between border-b border-white/6 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),transparent)] px-5 py-3">
             <div className="flex items-center gap-2">
               <span className="size-3 rounded-full bg-[#ff5f57]" />
