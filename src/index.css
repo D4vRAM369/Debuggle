@@ -61,7 +61,7 @@
 
 /* Tema claro (base) — paleta Zinc */
 :root {
-  --radius: 0.625rem;
+  --radius: 0.875rem;
   --background:             oklch(1 0 0);
   --foreground:             oklch(0.141 0.005 285.823);
   --card:                   oklch(1 0 0);
@@ -84,24 +84,24 @@
 
 /* Tema oscuro — Debuggle siempre en dark */
 .dark {
-  --background:             oklch(0.141 0.005 285.823);
+  --background:             oklch(0.17 0.015 274);
   --foreground:             oklch(0.985 0 0);
-  --card:                   oklch(0.21 0.006 285.885);
+  --card:                   oklch(0.24 0.02 274);
   --card-foreground:        oklch(0.985 0 0);
-  --popover:                oklch(0.21 0.006 285.885);
+  --popover:                oklch(0.22 0.018 274);
   --popover-foreground:     oklch(0.985 0 0);
-  --primary:                oklch(0.623 0.194 260);
+  --primary:                oklch(0.68 0.17 263);
   --primary-foreground:     oklch(0.985 0 0);
-  --secondary:              oklch(0.274 0.006 286.033);
+  --secondary:              oklch(0.29 0.016 274);
   --secondary-foreground:   oklch(0.985 0 0);
-  --muted:                  oklch(0.274 0.006 286.033);
-  --muted-foreground:       oklch(0.705 0.015 286.067);
-  --accent:                 oklch(0.25 0.03 260);
+  --muted:                  oklch(0.26 0.016 274);
+  --muted-foreground:       oklch(0.73 0.02 274);
+  --accent:                 oklch(0.3 0.03 260);
   --accent-foreground:      oklch(0.985 0 0);
   --destructive:            oklch(0.704 0.191 22.216);
-  --border:                 oklch(1 0 0 / 10%);
-  --input:                  oklch(1 0 0 / 15%);
-  --ring:                   oklch(0.623 0.194 260);
+  --border:                 oklch(1 0 0 / 9%);
+  --input:                  oklch(1 0 0 / 12%);
+  --ring:                   oklch(0.68 0.17 263);
 }
 
 /* Base global */
@@ -116,6 +116,10 @@ body {
   @apply bg-background text-foreground;
   height: 100vh;
   overflow: hidden;
+  background-image:
+    radial-gradient(circle at top, rgba(81, 110, 255, 0.16), transparent 26%),
+    radial-gradient(circle at bottom right, rgba(34, 197, 94, 0.08), transparent 18%),
+    linear-gradient(180deg, rgba(7, 8, 14, 1), rgba(9, 10, 18, 1));
 }
 
 #root {
@@ -124,8 +128,13 @@ body {
   flex-direction: column;
 }
 
+::selection {
+  background: rgba(110, 143, 255, 0.35);
+  color: white;
+}
+
 /* Scrollbar fino estilo dark — aplica a toda la app */
-::-webkit-scrollbar              { width: 6px; height: 6px; }
+::-webkit-scrollbar              { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track        { background: transparent; }
-::-webkit-scrollbar-thumb        { background: oklch(0.4 0 0 / 50%); border-radius: 9999px; }
-::-webkit-scrollbar-thumb:hover  { background: oklch(0.55 0 0 / 70%); }
+::-webkit-scrollbar-thumb        { background: rgba(151, 164, 255, 0.22); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover  { background: rgba(151, 164, 255, 0.36); }
