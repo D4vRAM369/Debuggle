@@ -1,9 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
-import { Sparkles, Trash2, BookmarkPlus, BookmarkCheck, Loader2, AlertCircle, Cpu, MessageSquare, ChevronDown } from 'lucide-react'
+import { Sparkles, Trash2, BookmarkPlus, BookmarkCheck, Loader2, AlertCircle, Cpu, MessageSquare, ChevronDown, AlertTriangle, Lightbulb, Tag, Code2, ShieldAlert, Info } from 'lucide-react'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
 import {
@@ -63,6 +62,26 @@ const SEVERITY_LABELS: Record<Severity, string> = {
   low: 'Bajo', medium: 'Medio', high: 'Alto', critical: 'Crítico',
 }
 
+const SEVERITY_ACCENT: Record<Severity, string> = {
+  low:      'border-l-blue-500/70   bg-blue-500/[0.04]',
+  medium:   'border-l-yellow-400/70 bg-yellow-400/[0.04]',
+  high:     'border-l-orange-500/70 bg-orange-500/[0.04]',
+  critical: 'border-l-red-500/70    bg-red-500/[0.04]',
+}
+
+function SeverityIcon({ severity }: { severity: Severity }): JSX.Element {
+  const cls = {
+    low:      'text-blue-400',
+    medium:   'text-yellow-400',
+    high:     'text-orange-400',
+    critical: 'text-red-400',
+  }[severity]
+  if (severity === 'critical') return <ShieldAlert className={cn('size-4 shrink-0', cls)} />
+  if (severity === 'high')     return <AlertTriangle className={cn('size-4 shrink-0', cls)} />
+  if (severity === 'medium')   return <AlertTriangle className={cn('size-4 shrink-0', cls)} />
+  return <Info className={cn('size-4 shrink-0', cls)} />
+}
+
 
 // ── Selector de proveedor + modelo ───────────────────────────────────────────
 interface ProviderPickerProps {
@@ -103,7 +122,7 @@ function ProviderPicker({ activeProvider, activeModel, onChange }: ProviderPicke
       </button>
 
       {open && (
-        <div className="absolute bottom-full mb-2 right-0 z-50 w-64 rounded-xl border border-white/10 bg-[rgba(12,14,24,0.97)] shadow-2xl backdrop-blur-xl overflow-hidden">
+        <div className="absolute top-full mt-2 right-0 z-50 w-64 rounded-xl border border-white/10 bg-[rgba(12,14,24,0.97)] shadow-2xl backdrop-blur-xl overflow-hidden">
           <div className="max-h-72 overflow-y-auto">
             {PROVIDERS.map((prov) => (
               <div key={prov.id}>
@@ -147,13 +166,11 @@ function ProviderPicker({ activeProvider, activeModel, onChange }: ProviderPicke
 // ── Props ─────────────────────────────────────────────────────────────────────
 interface AnalyzePageProps {
   /** Callback invocado al pulsar "Preguntar sobre esto" — navega al Chat con contexto */
-  onAskAboutThis:  (result: AnalysisResult) => void
-  /** Callback invocado cuando hay resultado nuevo — actualiza el semáforo en AppShell */
-  onAnalysisDone?: (result: AnalysisResult) => void
+  onAskAboutThis: (result: AnalysisResult) => void
 }
 
 // ── Pantalla Analizar ────────────────────────────────────────────────────────
-export function AnalyzePage({ onAskAboutThis, onAnalysisDone }: AnalyzePageProps): JSX.Element {
+export function AnalyzePage({ onAskAboutThis }: AnalyzePageProps): JSX.Element {
   const [input,        setInput]     = useState('')
   const [level,        setLevel]     = useState<Level>('medio')
   const [isAnalyzing,  setAnalyzing] = useState(false)
@@ -218,13 +235,11 @@ export function AnalyzePage({ onAskAboutThis, onAnalysisDone }: AnalyzePageProps
         })
         setResult(res)
         setUsedMock(false)
-        onAnalysisDone?.(res)
       } else {
         // ⚠️ Sin API key → modo demo (mock)
         const res = await analyzeMock(input, currentLevel)
         setResult(res)
         setUsedMock(true)
-        onAnalysisDone?.(res)
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Error desconocido al contactar la IA'
@@ -274,7 +289,7 @@ export function AnalyzePage({ onAskAboutThis, onAnalysisDone }: AnalyzePageProps
   }
 
   return (
-    <div className="flex flex-col h-full p-5 gap-4 overflow-hidden">
+    <div className="flex flex-col h-full p-5 gap-4">
 
       {/* ── Zona de entrada ── */}
       <div className="flex flex-col gap-3">
@@ -367,109 +382,120 @@ export function AnalyzePage({ onAskAboutThis, onAnalysisDone }: AnalyzePageProps
 
         {/* Resultado */}
         {result && !isAnalyzing && (
-          <Card className="border-border">
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-2 flex-wrap">
-                <Badge className={cn('border', SEVERITY_STYLES[result.severity])}>
+          <div className={cn(
+            'rounded-xl border border-border border-l-4 overflow-hidden',
+            SEVERITY_ACCENT[result.severity]
+          )}>
+            {/* Header */}
+            <div className="flex items-start gap-3 px-4 py-3 border-b border-border/50">
+              <SeverityIcon severity={result.severity} />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground leading-tight truncate">
                   {result.errorType}
-                </Badge>
-                <Badge variant="outline" className="text-xs">
-                  {result.language}
-                </Badge>
-                <Badge variant="outline" className={cn('text-xs border', SEVERITY_STYLES[result.severity])}>
-                  Severidad: {SEVERITY_LABELS[result.severity]}
-                </Badge>
-                {usedMock && (
-                  <Badge variant="outline" className="text-xs text-muted-foreground border-dashed">
-                    modo demo — configura una API key
-                  </Badge>
-                )}
-              </div>
-            </CardHeader>
-
-            <CardContent className="space-y-4 text-sm">
-              <div className="space-y-1">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                  📝 Qué pasó
                 </p>
-                <p className="text-foreground leading-relaxed">{result.explanation}</p>
-              </div>
-
-              <Separator />
-
-              <div className="space-y-1">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                  💡 Cómo solucionarlo
-                </p>
-                <p className="text-foreground leading-relaxed">{result.solution}</p>
-              </div>
-
-              <Separator />
-
-              <div className="space-y-2">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                  🔑 Términos clave
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {result.terms.map((term) => (
-                    <Badge key={term} variant="secondary" className="text-xs cursor-pointer hover:bg-accent">
-                      {term}
-                    </Badge>
-                  ))}
+                <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                  <span className={cn('text-[11px] px-2 py-0.5 rounded-full border font-medium', SEVERITY_STYLES[result.severity])}>
+                    {SEVERITY_LABELS[result.severity]}
+                  </span>
+                  <span className="text-[11px] px-2 py-0.5 rounded-full border border-border text-muted-foreground font-mono">
+                    {result.language}
+                  </span>
+                  {usedMock && (
+                    <span className="text-[11px] px-2 py-0.5 rounded-full border border-dashed border-border text-muted-foreground/60">
+                      demo
+                    </span>
+                  )}
                 </div>
               </div>
-            </CardContent>
+            </div>
 
-            {result.correctedCode && (
-              <>
-                <Separator />
-                <div className="px-6 pb-4 space-y-2">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    🔧 Corrección sugerida
-                  </p>
+            {/* Secciones */}
+            <div className="divide-y divide-border/40">
+              <div className="px-4 py-3 space-y-1.5">
+                <div className="flex items-center gap-1.5 text-muted-foreground">
+                  <AlertTriangle className="size-3.5" />
+                  <span className="text-[11px] font-semibold uppercase tracking-wider">Qué pasó</span>
+                </div>
+                <p className="text-sm text-foreground leading-relaxed">{result.explanation}</p>
+              </div>
+
+              <div className="px-4 py-3 space-y-1.5">
+                <div className="flex items-center gap-1.5 text-muted-foreground">
+                  <Lightbulb className="size-3.5" />
+                  <span className="text-[11px] font-semibold uppercase tracking-wider">Cómo solucionarlo</span>
+                </div>
+                <p className="text-sm text-foreground leading-relaxed">{result.solution}</p>
+              </div>
+
+              {result.terms.length > 0 && (
+                <div className="px-4 py-3 space-y-1.5">
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <Tag className="size-3.5" />
+                    <span className="text-[11px] font-semibold uppercase tracking-wider">Términos clave</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {result.terms.map((term) => (
+                      <span
+                        key={term}
+                        className="text-xs px-2 py-0.5 rounded-md bg-accent text-accent-foreground font-mono cursor-default hover:bg-primary/15 hover:text-primary transition-colors"
+                      >
+                        {term}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {result.correctedCode && (
+                <div className="px-4 py-3 space-y-1.5">
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <Code2 className="size-3.5" />
+                    <span className="text-[11px] font-semibold uppercase tracking-wider">Corrección sugerida</span>
+                  </div>
                   <CodeBlock code={result.correctedCode} language={result.language} />
                 </div>
-              </>
-            )}
+              )}
+            </div>
 
-            <CardFooter className="gap-2 pt-2 flex-wrap">
+            {/* Footer */}
+            <div className="flex items-center gap-1.5 px-4 py-2 border-t border-border/50 bg-muted/10 flex-wrap">
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
                 className={cn(
-                  'gap-1.5 transition-colors',
-                  savedOk && 'text-emerald-500 border-emerald-500/40 hover:bg-emerald-500/10'
+                  'gap-1.5 h-7 text-xs',
+                  savedOk && 'text-emerald-500 hover:text-emerald-500'
                 )}
                 onClick={handleSave}
                 disabled={isSaving || usedMock || savedOk}
                 title={usedMock ? 'No disponible en modo demo' : undefined}
               >
                 {isSaving
-                  ? <><Loader2 className="size-3.5 animate-spin" /> Guardando...</>
+                  ? <><Loader2 className="size-3 animate-spin" /> Guardando...</>
                   : savedOk
-                    ? <><BookmarkCheck className="size-3.5" /> Guardado</>
-                    : <><BookmarkPlus className="size-3.5" /> Guardar en Guía</>
+                    ? <><BookmarkCheck className="size-3" /> Guardado</>
+                    : <><BookmarkPlus className="size-3" /> Guardar</>
                 }
               </Button>
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                className="gap-1.5 text-primary border-primary/30 hover:bg-primary/10"
+                className="gap-1.5 h-7 text-xs text-primary"
                 onClick={() => onAskAboutThis(result)}
               >
-                <MessageSquare className="size-3.5" />
-                Preguntar sobre esto
+                <MessageSquare className="size-3" />
+                Preguntar
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleSwitchLevel}
-                className="text-xs text-muted-foreground ml-auto"
+                className="h-7 text-xs text-muted-foreground ml-auto"
               >
-                🔁 Ver en {level === 'novato' ? 'Medio' : level === 'medio' ? 'Experto' : 'Novato'}
+                Ver en {level === 'novato' ? 'Medio' : level === 'medio' ? 'Experto' : 'Novato'}
               </Button>
-            </CardFooter>
-          </Card>
+            </div>
+          </div>
         )}
       </div>
     </div>
