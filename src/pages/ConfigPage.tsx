@@ -261,7 +261,7 @@ export function ConfigPage(): JSX.Element {
       <Button
         onClick={handleSave}
         disabled={saving}
-        className="gap-2 mt-auto"
+        className="gap-2 mt-auto self-start"
       >
         {saving
           ? <><Loader2 className="size-4 animate-spin" /> Guardando...</>

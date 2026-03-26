@@ -32,15 +32,15 @@ function LevelSelector({
   onChange: (l: Level) => void
 }): JSX.Element {
   return (
-    <div className="flex items-center gap-1 rounded-md border border-border p-0.5 bg-muted/40">
+    <div className="flex items-center gap-1 rounded-lg border border-border p-1 bg-muted/40">
       {LEVELS.map((lvl) => (
         <button
           key={lvl.id}
           onClick={() => onChange(lvl.id)}
           className={cn(
-            'px-3 py-1 rounded text-xs font-medium transition-colors',
+            'px-4 py-1.5 rounded-md text-sm font-medium transition-colors',
             value === lvl.id
-              ? 'bg-background text-foreground shadow-sm'
+              ? 'bg-primary text-primary-foreground shadow-sm'
               : 'text-muted-foreground hover:text-foreground'
           )}
         >
@@ -218,7 +218,7 @@ export function AnalyzePage({ onAskAboutThis }: AnalyzePageProps): JSX.Element {
         {/* Controles: nivel + indicador proveedor + botón analizar */}
         <div className="flex items-center justify-between gap-3">
           <LevelSelector value={level} onChange={setLevel} />
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             {/* Indicador del proveedor activo */}
             <span className="flex items-center gap-1 text-xs text-muted-foreground">
               <Cpu className="size-3" />
