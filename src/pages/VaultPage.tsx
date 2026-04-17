@@ -339,7 +339,7 @@ export function VaultPage({ onAskAboutThis }: VaultPageProps): JSX.Element {
                     {selected.terms.map((term) => (
                       <span
                         key={term}
-                        className="text-sm px-3 py-1.5 rounded-md bg-blue-500/10 border border-blue-500/25 text-blue-300 font-mono leading-normal cursor-default hover:bg-blue-500/20 hover:text-blue-200 hover:border-blue-400/40 transition-colors"
+                        className="text-sm px-3 py-1.5 rounded-md bg-sky-500/10 border border-sky-400/30 text-sky-400 font-mono leading-normal cursor-default hover:bg-sky-400/15 hover:text-sky-300 hover:border-sky-300/50 transition-colors"
                       >
                         #{term}
                       </span>

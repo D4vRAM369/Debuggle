@@ -105,8 +105,8 @@ export function CodeBlock({ code, language, className }: CodeBlockProps): JSX.El
   }
 
   return (
-    <div className={cn('overflow-hidden rounded-[18px] border border-white/7 bg-[rgba(8,10,18,0.92)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]', className)}>
-      <div className="flex items-center justify-between border-b border-white/6 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] px-3 py-2">
+    <div className={cn('overflow-hidden rounded-xl border border-white/7 bg-[rgba(8,10,18,0.92)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]', className)}>
+      <div className="flex items-center justify-between border-b border-white/6 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] px-4 py-2.5">
         <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
           {language}
         </span>

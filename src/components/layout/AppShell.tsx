@@ -181,7 +181,12 @@ export function AppShell({
                 )
               })}
             </div>
-            <p className="text-xs font-medium tracking-[0.18em] text-muted-foreground">Debuggle</p>
+            <p
+              className="text-sm font-bold tracking-[0.28em] text-white uppercase"
+              style={{ textShadow: '0 0 18px rgba(255,255,255,0.45), 0 0 40px rgba(255,255,255,0.18)' }}
+            >
+              Debuggle
+            </p>
             <div className="w-14" />
           </div>
 
