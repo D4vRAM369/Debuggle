@@ -10,11 +10,10 @@
 import { useState, useEffect } from 'react'
 import {
   BookOpen, Search, Trash2, MessageSquare,
-  Loader2, X
+  Loader2, X, AlertTriangle, Lightbulb, Tag, Code2, FileText
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
 import type { VaultMeta, VaultEntry } from '@/types/api'
 import type { AnalysisResult, Severity } from '@/lib/analyze'
@@ -210,7 +209,7 @@ export function VaultPage({ onAskAboutThis }: VaultPageProps): JSX.Element {
               key={entry.id}
               onClick={() => handleSelect(entry)}
               className={cn(
-                'w-full text-left px-3 py-2.5 border-b border-border/50 transition-colors',
+                'w-full text-left px-3 py-3 border-b border-border transition-colors',
                 'hover:bg-accent/60',
                 selected?.id === entry.id && 'bg-primary/8 border-l-2 border-l-primary'
               )}
@@ -309,60 +308,72 @@ export function VaultPage({ onAskAboutThis }: VaultPageProps): JSX.Element {
             </div>
 
             {/* Cuerpo del detalle — scrollable */}
-            <div className="flex-1 overflow-auto px-5 py-4 space-y-4 text-sm">
+            <div className="flex-1 overflow-auto px-5 py-5 space-y-4">
 
-              <div className="space-y-1">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                  📝 Qué pasó
-                </p>
-                <p className="text-foreground leading-relaxed">{selected.explanation}</p>
-              </div>
-
-              <Separator />
-
-              <div className="space-y-1">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                  💡 Cómo solucionarlo
-                </p>
-                <p className="text-foreground leading-relaxed">{selected.solution}</p>
-              </div>
-
-              <Separator />
-
-              <div className="space-y-2">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                  🔑 Términos clave
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {selected.terms.map((term) => (
-                    <Badge key={term} variant="secondary" className="text-xs">
-                      {term}
-                    </Badge>
-                  ))}
+              {/* Qué pasó */}
+              <div className="rounded-lg border border-yellow-500/20 bg-yellow-500/[0.03]">
+                <div className="flex items-center gap-2.5 px-4 py-3 border-b border-yellow-500/15 bg-yellow-500/[0.04]">
+                  <AlertTriangle className="size-4 text-yellow-400 shrink-0 animate-pulse" />
+                  <span className="text-sm font-bold uppercase tracking-wider text-yellow-400">Qué pasó</span>
                 </div>
+                <p className="px-4 py-5 text-base text-foreground leading-relaxed">{selected.explanation}</p>
               </div>
 
-              {selected.correctedCode && (
-                <>
-                  <Separator />
-                  <div className="space-y-2">
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                      🔧 Corrección sugerida
-                    </p>
-                    <CodeBlock code={selected.correctedCode} language={selected.language} />
+              {/* Cómo solucionarlo */}
+              <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/[0.03]">
+                <div className="flex items-center gap-2.5 px-4 py-3 border-b border-emerald-500/15 bg-emerald-500/[0.04]">
+                  <Lightbulb className="size-4 text-emerald-400 shrink-0 animate-pulse" />
+                  <span className="text-sm font-bold uppercase tracking-wider text-emerald-400">Cómo solucionarlo</span>
+                </div>
+                <p className="px-4 py-5 text-base text-foreground leading-relaxed">{selected.solution}</p>
+              </div>
+
+              {/* Términos clave */}
+              {selected.terms.length > 0 && (
+                <div className="rounded-lg border border-blue-500/20 bg-blue-500/[0.03]">
+                  <div className="flex items-center gap-2.5 px-4 py-3 border-b border-blue-500/15 bg-blue-500/[0.04]">
+                    <Tag className="size-4 text-blue-400 shrink-0" />
+                    <span className="text-sm font-bold uppercase tracking-wider text-blue-400">Términos clave</span>
                   </div>
-                </>
+                  <div className="flex flex-wrap gap-2 px-4 py-5">
+                    {selected.terms.map((term) => (
+                      <span
+                        key={term}
+                        className="text-sm px-3 py-1.5 rounded-md bg-blue-500/10 border border-blue-500/25 text-blue-300 font-mono leading-normal cursor-default hover:bg-blue-500/20 hover:text-blue-200 hover:border-blue-400/40 transition-colors"
+                      >
+                        #{term}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               )}
 
-              {/* Error original — colapsado al fondo */}
-              <Separator />
-              <details className="group">
-                <summary className="text-xs font-semibold text-muted-foreground uppercase tracking-wide cursor-pointer select-none hover:text-foreground transition-colors">
-                  📋 Error original
+              {/* Corrección sugerida */}
+              {selected.correctedCode && (
+                <div className="rounded-lg border border-white/10 bg-white/[0.03]">
+                  <div className="flex items-center gap-2.5 px-4 py-3 border-b border-white/10 bg-white/[0.02]">
+                    <Code2 className="size-4 text-slate-400 shrink-0" />
+                    <span className="text-sm font-bold uppercase tracking-wider text-slate-400">Corrección sugerida</span>
+                  </div>
+                  <div className="px-4 py-5">
+                    <CodeBlock code={selected.correctedCode} language={selected.language} />
+                  </div>
+                </div>
+              )}
+
+              {/* Error original — colapsado */}
+              <details className="group rounded-lg border border-white/10 bg-white/[0.03]">
+                <summary className="flex items-center gap-2.5 px-4 py-3 cursor-pointer select-none hover:bg-white/[0.03] transition-colors">
+                  <FileText className="size-4 text-slate-400 shrink-0" />
+                  <span className="text-sm font-bold uppercase tracking-wider text-slate-400 group-hover:text-foreground transition-colors">
+                    Error original
+                  </span>
                 </summary>
-                <pre className="mt-2 bg-zinc-950 border border-border rounded-md p-3 text-xs font-mono text-muted-foreground overflow-x-auto leading-relaxed whitespace-pre-wrap">
-                  {selected.input}
-                </pre>
+                <div className="px-4 pb-4 pt-0">
+                  <pre className="bg-zinc-950 border border-white/8 rounded-md p-3 text-xs font-mono text-muted-foreground overflow-x-auto leading-relaxed whitespace-pre-wrap">
+                    {selected.input}
+                  </pre>
+                </div>
               </details>
 
             </div>

@@ -167,10 +167,12 @@ function ProviderPicker({ activeProvider, activeModel, onChange }: ProviderPicke
 interface AnalyzePageProps {
   /** Callback invocado al pulsar "Preguntar sobre esto" — navega al Chat con contexto */
   onAskAboutThis: (result: AnalysisResult) => void
+  /** Callback invocado cuando llega un resultado — actualiza el semáforo en AppShell */
+  onAnalysisDone?: (result: AnalysisResult) => void
 }
 
 // ── Pantalla Analizar ────────────────────────────────────────────────────────
-export function AnalyzePage({ onAskAboutThis }: AnalyzePageProps): JSX.Element {
+export function AnalyzePage({ onAskAboutThis, onAnalysisDone }: AnalyzePageProps): JSX.Element {
   const [input,        setInput]     = useState('')
   const [level,        setLevel]     = useState<Level>('medio')
   const [isAnalyzing,  setAnalyzing] = useState(false)
@@ -235,11 +237,13 @@ export function AnalyzePage({ onAskAboutThis }: AnalyzePageProps): JSX.Element {
         })
         setResult(res)
         setUsedMock(false)
+        onAnalysisDone?.(res)
       } else {
         // ⚠️ Sin API key → modo demo (mock)
         const res = await analyzeMock(input, currentLevel)
         setResult(res)
         setUsedMock(true)
+        onAnalysisDone?.(res)
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Error desconocido al contactar la IA'
