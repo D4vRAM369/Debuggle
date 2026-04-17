@@ -7,7 +7,7 @@
 [![Electron](https://img.shields.io/badge/Electron-33-47848F?logo=electron)](https://electronjs.org)
 [![React](https://img.shields.io/badge/React-18-61DAFB?logo=react)](https://react.dev)
 
-![Debuggle screenshot](docs/assets/screenshot.png)
+<!-- Screenshot coming soon -->
 
 ---
 
@@ -74,7 +74,7 @@ Debuggle is a desktop app for developers who want to **understand** their errors
 ### Install & run
 
 ```bash
-git clone https://github.com/your-username/debuggle.git
+git clone https://github.com/D4vRAM369/debuggle.git
 cd debuggle
 pnpm install
 pnpm dev
@@ -171,7 +171,7 @@ Debuggle is open source under the **GNU Affero General Public License v3.0 (AGPL
 
 You are free to use, modify, and distribute this software under the terms of the AGPL-3.0. If you run a modified version as a network service, you must make your source code available.
 
-For **commercial licensing** (if you want to use Debuggle in a proprietary product or service without the AGPL obligations), contact: [your-email@example.com]
+For **commercial licensing** (if you want to use Debuggle in a proprietary product or service without the AGPL obligations), open an issue on GitHub.
 
 See [LICENSE](LICENSE) for the full text.
 
