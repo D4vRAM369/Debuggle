@@ -98,9 +98,9 @@ export function AppShell({
   }
 
   return (
-    <div className="relative flex h-screen overflow-hidden bg-background px-4 py-5 text-foreground">
+    <div className="relative flex h-screen overflow-auto bg-background px-4 py-5 text-foreground">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(46,87,255,0.14),transparent_30%),radial-gradient(circle_at_bottom_right,rgba(52,211,153,0.08),transparent_22%)]" />
-      <div className="relative mx-auto flex h-full w-full max-w-[1480px] overflow-hidden rounded-[28px] border border-white/8 bg-[rgba(8,10,20,0.88)] shadow-[0_30px_120px_rgba(0,0,0,0.55)] backdrop-blur-xl">
+      <div className="relative mx-auto flex h-full w-full max-w-[1480px] min-w-[780px] overflow-hidden rounded-[28px] border border-white/8 bg-[rgba(8,10,20,0.88)] shadow-[0_30px_120px_rgba(0,0,0,0.55)] backdrop-blur-xl">
         <aside className="flex w-52 shrink-0 flex-col border-r border-white/6 bg-[linear-gradient(180deg,rgba(16,18,31,0.96),rgba(12,14,24,0.9))]">
           <div className="flex items-center gap-3 border-b border-white/6 px-5 py-5">
             <div className="flex size-9 items-center justify-center rounded-2xl border border-primary/30 bg-[linear-gradient(135deg,rgba(92,124,250,0.28),rgba(92,124,250,0.08))] text-primary shadow-[0_12px_35px_rgba(59,91,219,0.22)]">

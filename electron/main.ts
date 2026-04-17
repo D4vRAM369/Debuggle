@@ -317,6 +317,25 @@ function createWindow(): void {
 
   // Inicia el ciclo de comprobación de actualizaciones
   setupAutoUpdater(mainWindow)
+
+  // ── Zoom con teclado ────────────────────────────────────────────────────────
+  // Ctrl+= / Ctrl++  → zoom in   (máx nivel 5 ≈ 150%)
+  // Ctrl+-           → zoom out  (mín nivel 0 = 100%, no se puede reducir más)
+  // Ctrl+0           → reset al nivel por defecto
+  let zoomLevel = 0
+  mainWindow.webContents.on('before-input-event', (_evt, input) => {
+    if (!input.control || input.type !== 'keyDown') return
+    if (input.key === '=' || input.key === '+') {
+      zoomLevel = Math.min(zoomLevel + 1, 5)
+      mainWindow.webContents.setZoomLevel(zoomLevel)
+    } else if (input.key === '-') {
+      zoomLevel = Math.max(zoomLevel - 1, 0)
+      mainWindow.webContents.setZoomLevel(zoomLevel)
+    } else if (input.key === '0') {
+      zoomLevel = 0
+      mainWindow.webContents.setZoomLevel(0)
+    }
+  })
 }
 
 app.whenReady().then(() => {

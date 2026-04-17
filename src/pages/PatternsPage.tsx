@@ -41,30 +41,54 @@ function StatCard({
   )
 }
 
+type PillColors = { dot: string; bg: string; border: string; bar: string; badge: string; badgeText: string }
+
+const ERROR_PALETTE: PillColors[] = [
+  { dot: '#ef4444', bg: 'rgba(239,68,68,.04)',  border: 'rgba(239,68,68,.18)',  bar: '#ef4444', badge: 'rgba(239,68,68,.15)',  badgeText: '#ef4444' },
+  { dot: '#f97316', bg: 'rgba(249,115,22,.04)', border: 'rgba(249,115,22,.18)', bar: '#f97316', badge: 'rgba(249,115,22,.15)', badgeText: '#f97316' },
+]
+const LANG_PALETTE: PillColors[] = [
+  { dot: '#f59e0b', bg: 'rgba(245,158,11,.04)', border: 'rgba(245,158,11,.18)', bar: '#f59e0b', badge: 'rgba(245,158,11,.15)', badgeText: '#f59e0b' },
+  { dot: '#3b82f6', bg: 'rgba(59,130,246,.04)', border: 'rgba(59,130,246,.18)', bar: '#3b82f6', badge: 'rgba(59,130,246,.15)', badgeText: '#3b82f6' },
+]
+const MUTED_COLOR: PillColors = { dot: '#6b7280', bg: 'rgba(107,114,128,.03)', border: 'rgba(107,114,128,.12)', bar: '#6b7280', badge: 'rgba(107,114,128,.12)', badgeText: '#9ca3af' }
+
 function FreqBar({
   label,
   count,
   max,
-  color = 'bg-primary',
+  rank = 0,
+  palette = ERROR_PALETTE,
 }: {
-  label: string
-  count: number
-  max: number
-  color?: string
+  label:    string
+  count:    number
+  max:      number
+  rank?:    number
+  palette?: PillColors[]
 }) {
   const pct = max > 0 ? Math.round((count / max) * 100) : 0
+  const c   = palette[rank] ?? MUTED_COLOR
+
   return (
-    <div className="flex items-center gap-3">
-      <span className="w-40 truncate text-sm text-slate-300 shrink-0" title={label}>
-        {label}
-      </span>
-      <div className="flex-1 bg-slate-800 rounded-full h-2 overflow-hidden">
-        <div
-          className={cn('h-full rounded-full transition-all duration-500', color)}
-          style={{ width: `${pct}%` }}
-        />
+    <div
+      className="flex items-center justify-between gap-3 px-3 py-2 rounded-md"
+      style={{ background: c.bg, border: `1px solid ${c.border}` }}
+    >
+      <div className="flex items-center gap-2.5 min-w-0">
+        <span className="size-1.5 rounded-full shrink-0" style={{ background: c.dot }} />
+        <span className="text-[11px] text-slate-200 truncate">{label}</span>
       </div>
-      <span className="text-xs text-slate-500 w-5 text-right">{count}</span>
+      <div className="flex items-center gap-2 shrink-0">
+        <div className="w-12 h-[3px] rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,.06)' }}>
+          <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: c.bar }} />
+        </div>
+        <span
+          className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full tabular-nums"
+          style={{ background: c.badge, color: c.badgeText }}
+        >
+          ×{count}
+        </span>
+      </div>
     </div>
   )
 }
@@ -136,7 +160,8 @@ export function PatternsPage(): JSX.Element {
   }
 
   return (
-    <div className="max-w-2xl mx-auto flex flex-col gap-6 p-2">
+    <div className="h-full overflow-y-auto">
+    <div className="max-w-2xl mx-auto flex flex-col gap-6 p-5">
 
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -161,8 +186,8 @@ export function PatternsPage(): JSX.Element {
             Errores más frecuentes
           </h3>
           <div className="flex flex-col gap-2">
-            {topErrors.map(([type, count]) => (
-              <FreqBar key={type} label={type} count={count} max={maxError} color="bg-red-500/70" />
+            {topErrors.map(([type, count], i) => (
+              <FreqBar key={type} label={type} count={count} max={maxError} rank={i} palette={ERROR_PALETTE} />
             ))}
           </div>
         </section>
@@ -175,8 +200,8 @@ export function PatternsPage(): JSX.Element {
             Lenguajes
           </h3>
           <div className="flex flex-col gap-2">
-            {topLangs.map(([lang, count]) => (
-              <FreqBar key={lang} label={lang} count={count} max={maxLang} color="bg-amber-500/70" />
+            {topLangs.map(([lang, count], i) => (
+              <FreqBar key={lang} label={lang} count={count} max={maxLang} rank={i} palette={LANG_PALETTE} />
             ))}
           </div>
         </section>
@@ -189,22 +214,40 @@ export function PatternsPage(): JSX.Element {
             Errores recurrentes
           </h3>
           <div className="flex flex-col gap-2">
-            {repeatedList.map((item) => (
-              <div
-                key={`${item.errorType}::${item.language}`}
-                className="flex items-center justify-between rounded-lg border border-slate-700 bg-slate-900 px-3 py-2"
-              >
-                <span className="text-sm text-slate-200 truncate mr-3">{item.errorType}</span>
-                <div className="flex items-center gap-2 shrink-0">
-                  <Badge variant="secondary" className="text-xs">{item.language}</Badge>
-                  <Badge variant="destructive" className="text-xs">×{item.count}</Badge>
+            {repeatedList.map((item) => {
+              const c = item.count >= 4 ? ERROR_PALETTE[0] : item.count >= 2 ? ERROR_PALETTE[1] : MUTED_COLOR
+              return (
+                <div
+                  key={`${item.errorType}::${item.language}`}
+                  className="flex items-center justify-between gap-3 px-3 py-2 rounded-md"
+                  style={{ background: c.bg, border: `1px solid ${c.border}` }}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span className="size-1.5 rounded-full shrink-0" style={{ background: c.dot }} />
+                    <span className="text-[11px] text-slate-200 truncate">{item.errorType}</span>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span
+                      className="text-[10px] font-medium px-2 py-1 rounded-full leading-none"
+                      style={{ background: 'rgba(255,255,255,.06)', color: '#94a3b8' }}
+                    >
+                      {item.language}
+                    </span>
+                    <span
+                      className="text-[10px] font-semibold px-1.5 py-1 rounded-full leading-none tabular-nums"
+                      style={{ background: c.badge, color: c.badgeText }}
+                    >
+                      ×{item.count}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </section>
       )}
 
+    </div>
     </div>
   )
 }

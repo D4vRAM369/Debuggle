@@ -19,3 +19,6 @@ docs/
 
 # Vault personal — datos privados del usuario
 vault/
+
+# Companion visual de brainstorming
+.superpowers/
