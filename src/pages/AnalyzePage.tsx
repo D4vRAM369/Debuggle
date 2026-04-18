@@ -265,11 +265,10 @@ export function AnalyzePage({ onAskAboutThis, onAnalysisDone }: AnalyzePageProps
       {/* ── Zona de entrada ── */}
       <div style={{ padding: '20px 20px 0' }}>
 
-        {/* Header: título + stdin + pegar ejemplo + limpiar */}
+        {/* Header: título + contexto detectado + acciones */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
           <h1 style={{ margin: 0, fontSize: 'var(--fs-18)', fontWeight: 600, letterSpacing: '-0.01em', color: 'var(--text-1)' }}>Analizar</h1>
-          <Chip tone="info" mono>stdin</Chip>
-          {detectedLang && <Chip>{detectedLang}</Chip>}
+          {detectedLang && <Chip tone="info" mono>{detectedLang}</Chip>}
           <div style={{ flex: 1 }} />
           <button className="btn ghost" onClick={handlePasteExample} style={{ height: 30 }}>
             <FileText style={{ width: 13, height: 13 }} /> Pegar ejemplo

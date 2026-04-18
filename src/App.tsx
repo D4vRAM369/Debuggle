@@ -10,6 +10,14 @@ type UpdateState =
   | { status: 'available';  info: UpdateInfo }
   | { status: 'downloaded'; info: UpdateInfo }
 
+const WINDOW_LABELS: Record<TabId, string> = {
+  analyze: 'Analizar',
+  chat: 'Chat',
+  vault: 'Guía',
+  patterns: 'Patrones',
+  config: 'Config',
+}
+
 // ── Banner de actualización ───────────────────────────────────────────────────
 function UpdateBanner({ state, onDismiss, onInstall }: {
   state:     UpdateState
@@ -69,20 +77,33 @@ function App(): JSX.Element {
   }
 
   return (
-    <div className="flex flex-col h-screen">
-      <UpdateBanner
-        state={updateState}
-        onDismiss={() => setUpdateState({ status: 'idle' })}
-        onInstall={() => window.api.updater.install()}
-      />
-      <div className="flex-1 min-h-0">
-        <AppShell
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          chatContext={chatContext}
-          onAskAboutThis={handleAskAboutThis}
-          onClearChatContext={handleClearChatContext}
+    <div className="desktop">
+      <div className="win">
+        <div className="titlebar">
+          <div className="traffic">
+            <span className="c" />
+            <span className="m" />
+            <span className="x" />
+          </div>
+          <div className="title">Debuggle — {WINDOW_LABELS[activeTab]}</div>
+          <div style={{ width: 64 }} />
+        </div>
+
+        <UpdateBanner
+          state={updateState}
+          onDismiss={() => setUpdateState({ status: 'idle' })}
+          onInstall={() => window.api.updater.install()}
         />
+
+        <div className="win-body">
+          <AppShell
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            chatContext={chatContext}
+            onAskAboutThis={handleAskAboutThis}
+            onClearChatContext={handleClearChatContext}
+          />
+        </div>
       </div>
     </div>
   )

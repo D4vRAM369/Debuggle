@@ -1,7 +1,5 @@
-import { useState } from 'react'
-import { type LucideIcon, Bug, Zap, BookOpen, BarChart2, Settings2, MessageSquare, Globe, Moon, SlidersHorizontal } from 'lucide-react'
-import type { AnalysisResult, Severity } from '@/lib/analyze'
-import { Severity as SeverityBadge } from '@/components/ui/Severity'
+import { type LucideIcon, Zap, BookOpen, BarChart2, Settings2, MessageSquare, Globe, Moon, SlidersHorizontal } from 'lucide-react'
+import type { AnalysisResult } from '@/lib/analyze'
 import { AnalyzePage } from '@/pages/AnalyzePage'
 import { ChatPage } from '@/pages/ChatPage'
 import { VaultPage } from '@/pages/VaultPage'
@@ -25,11 +23,29 @@ const NAV_ITEMS: NavItem[] = [
 ]
 
 const SCREEN_LABELS: Record<TabId, string> = {
-  analyze:  'ANALIZAR',
-  chat:     'CHAT',
-  vault:    'GUÍA',
-  patterns: 'PATRONES',
-  config:   'CONFIG',
+  analyze:  'Analizar',
+  chat:     'Chat',
+  vault:    'Guía',
+  patterns: 'Patrones',
+  config:   'Config',
+}
+
+function BugMark({ size = 20 }: { size?: number }): JSX.Element {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M8 8a4 4 0 0 1 8 0" />
+      <path d="M9 5l-1-1.5" />
+      <path d="M15 5l1-1.5" />
+      <rect x="7" y="9" width="10" height="10" rx="4.5" />
+      <path d="M2.5 12h4.5" />
+      <path d="M17 12h4.5" />
+      <path d="M4 7l3 1.5" />
+      <path d="M20 7l-3 1.5" />
+      <path d="M4 17l3-1.5" />
+      <path d="M20 17l-3-1.5" />
+      <path d="M12 12v6" />
+    </svg>
+  )
 }
 
 interface AppShellProps {
@@ -47,12 +63,10 @@ export function AppShell({
   onAskAboutThis,
   onClearChatContext,
 }: AppShellProps): JSX.Element {
-  const [severity, setSeverity] = useState<Severity | null>(null)
-
   function renderPage(): JSX.Element {
     switch (activeTab) {
       case 'analyze':
-        return <AnalyzePage onAskAboutThis={onAskAboutThis} onAnalysisDone={(r) => setSeverity(r.severity)} />
+        return <AnalyzePage onAskAboutThis={onAskAboutThis} />
       case 'chat':
         return <ChatPage context={chatContext} onClearContext={onClearChatContext} />
       case 'vault':
@@ -70,11 +84,11 @@ export function AppShell({
       <aside className="side">
         <div className="side-head">
           <div className="logo">
-            <Bug style={{ width: 20, height: 20 }} />
+            <BugMark />
           </div>
           <div className="brand">
             <div className="name">Debuggle</div>
-            <div className="tag">Error Lab</div>
+            <div className="tag">ERROR LAB</div>
           </div>
         </div>
 
@@ -89,11 +103,11 @@ export function AppShell({
                 aria-current={isActive ? 'true' : undefined}
                 onClick={() => onTabChange(item.id)}
               >
-                <Icon className="nav-ico" />
+                <Icon className="ico" />
                 <span>{item.label}</span>
                 {item.id === 'chat' && chatContext !== null
                   ? <span className="nav-dot" />
-                  : <span className="nav-kbd">{item.kbd}</span>
+                  : <span className="kbd">{item.kbd}</span>
                 }
               </button>
             )
@@ -106,9 +120,9 @@ export function AppShell({
             aria-current={activeTab === 'config' ? 'true' : undefined}
             onClick={() => onTabChange('config')}
           >
-            <Settings2 className="nav-ico" />
+            <Settings2 className="ico" />
             <span>Config</span>
-            <span className="nav-kbd">⌘,</span>
+            <span className="kbd">⌘,</span>
           </button>
         </div>
       </aside>
@@ -116,9 +130,7 @@ export function AppShell({
       {/* ── Main ── */}
       <section className="main">
         <div className="topbar">
-          <SeverityBadge severity={severity} dotOnly />
-          <span className="spacer" />
-          <span className="crumb">DEBUGGLE / <b>{SCREEN_LABELS[activeTab]}</b></span>
+          <span className="crumb"><b>DEBUGGLE</b> <span style={{ color: 'var(--text-4)' }}>/</span> {SCREEN_LABELS[activeTab]}</span>
           <span className="spacer" />
           <div style={{ display: 'flex', gap: 4 }}>
             <button className="icon-btn" title="Idioma"><Globe style={{ width: 16, height: 16 }} /></button>

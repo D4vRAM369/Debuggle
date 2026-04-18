@@ -95,6 +95,7 @@ function FreqBar({
 export function PatternsPage(): JSX.Element {
   const [entries, setEntries] = useState<VaultMeta[]>([])
   const [loading, setLoading] = useState(true)
+  const [range, setRange] = useState<'7d' | '30d' | 'all'>('30d')
 
   async function load() {
     setLoading(true)
@@ -108,7 +109,15 @@ export function PatternsPage(): JSX.Element {
 
   useEffect(() => { load() }, [])
 
-  const stats = computeStats(entries)
+  const now = Date.now()
+  const filteredEntries = entries.filter((entry) => {
+    if (range === 'all') return true
+    const ageMs = now - new Date(entry.date).getTime()
+    const maxDays = range === '7d' ? 7 : 30
+    return ageMs <= maxDays * 24 * 60 * 60 * 1000
+  })
+
+  const stats = computeStats(filteredEntries)
 
   // Top 5 errores y lenguajes ordenados por frecuencia
   const topErrors = Object.entries(stats.errorFrequency)
@@ -123,7 +132,7 @@ export function PatternsPage(): JSX.Element {
   const maxLang  = topLangs[0]?.[1]  ?? 1
 
   // Entradas repetidas agrupadas por errorType::language, ordenadas desc
-  const repeatedEntries = entries
+  const repeatedEntries = filteredEntries
     .filter((e) => stats.repeatedErrors.includes(e.errorType))
     .reduce<Map<string, { errorType: string; language: string; count: number }>>(
       (acc, e) => {
@@ -158,25 +167,30 @@ export function PatternsPage(): JSX.Element {
 
   return (
     <div style={{ height: '100%', overflowY: 'auto' }}>
-    <div style={{ flex: 1, overflow: 'auto', padding: 24, display: 'flex', flexDirection: 'column', gap: 20 }}>
+    <div style={{ flex: 1, overflow: 'auto', padding: 24, display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 1024, margin: '0 auto', width: '100%' }}>
 
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 14, flexWrap: 'wrap' }}>
         <div>
           <h1 style={{ margin: 0, fontSize: 'var(--fs-22)', fontWeight: 600, letterSpacing: '-0.015em', color: 'var(--text-1)' }}>Patrones</h1>
           <p style={{ margin: '4px 0 0', fontSize: 'var(--fs-13)', color: 'var(--text-3)' }}>Resumen de tus errores analizados</p>
         </div>
         <div style={{ flex: 1 }} />
+        <div className="seg" style={{ marginLeft: 'auto' }}>
+          <button type="button" aria-pressed={range === '7d'} onClick={() => setRange('7d')}>7d</button>
+          <button type="button" aria-pressed={range === '30d'} onClick={() => setRange('30d')}>30d</button>
+          <button type="button" aria-pressed={range === 'all'} onClick={() => setRange('all')}>All</button>
+        </div>
         <button className="icon-btn" onClick={load} disabled={loading} title="Recargar">
           <RefreshCw size={14} className={cn(loading && 'animate-spin')} style={{ color: 'var(--text-3)' }} />
         </button>
       </div>
 
       {/* Tarjetas resumen — 4 columnas */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 12 }}>
         <StatCard icon={Hash}          label="Total entradas"          value={stats.totalEntries} />
         <StatCard icon={Layers}        label="Tipos únicos"            value={stats.uniqueErrors} />
-        <StatCard icon={AlertTriangle} label="Error más frecuente"     value={stats.topError}     color="var(--err)" />
+        <StatCard icon={AlertTriangle} label="Error más frecuente"     value={stats.topError?.split(':')[0] ?? null} sub={stats.topError ?? undefined} color="var(--err)" />
         <StatCard icon={Code2}         label="Lenguaje con más fallos" value={stats.topLanguage}  color="var(--warn)" />
       </div>
 

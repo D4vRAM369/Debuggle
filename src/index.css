@@ -118,14 +118,11 @@
 }
 
 body {
-  font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: var(--font-ui);
   @apply bg-background text-foreground;
   height: 100vh;
   overflow: hidden;
-  background-image:
-    radial-gradient(circle at top, rgba(81, 110, 255, 0.16), transparent 26%),
-    radial-gradient(circle at bottom right, rgba(34, 197, 94, 0.08), transparent 18%),
-    linear-gradient(180deg, rgba(7, 8, 14, 1), rgba(9, 10, 18, 1));
+  background: #000;
 }
 
 #root {
