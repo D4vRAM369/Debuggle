@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import {
-  Sparkles, Trash2, BookmarkPlus, BookmarkCheck, Loader2, AlertCircle, Cpu,
+  Trash2, BookmarkPlus, BookmarkCheck, Loader2, AlertCircle, Cpu,
   MessageSquare, ChevronDown, AlertTriangle, Lightbulb, Tag, Code2, FileText,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -15,6 +15,7 @@ import { type ProviderId, getProvider, DEFAULT_PROVIDER_ID, getDefaultModel, PRO
 import { CodeBlock } from '@/components/ui/CodeBlock'
 import { Chip } from '@/components/ui/Chip'
 import { Severity as SeverityBadge } from '@/components/ui/Severity'
+import type { UILang } from '@/App'
 
 const SAMPLE_ERROR = `$ cargo run
 error[E0308]: mismatched types
@@ -26,16 +27,24 @@ error[E0308]: mismatched types
    |                  expected due to this`
 
 // ── Segmented nivel ──────────────────────────────────────────────────────────
-const LEVELS: { id: Level; label: string }[] = [
-  { id: 'novato',  label: 'Novato'  },
-  { id: 'medio',   label: 'Medio'   },
-  { id: 'experto', label: 'Experto' },
-]
+function getLevels(lang: UILang): { id: Level; label: string }[] {
+  return lang === 'en'
+    ? [
+        { id: 'novato', label: 'Beginner' },
+        { id: 'medio', label: 'Medium' },
+        { id: 'experto', label: 'Expert' },
+      ]
+    : [
+        { id: 'novato', label: 'Novato' },
+        { id: 'medio', label: 'Medio' },
+        { id: 'experto', label: 'Experto' },
+      ]
+}
 
-function LevelSeg({ value, onChange }: { value: Level; onChange: (l: Level) => void }): JSX.Element {
+function LevelSeg({ lang, value, onChange }: { lang: UILang; value: Level; onChange: (l: Level) => void }): JSX.Element {
   return (
     <div className="seg">
-      {LEVELS.map((lvl) => (
+      {getLevels(lang).map((lvl) => (
         <button
           key={lvl.id}
           type="button"
@@ -141,12 +150,13 @@ function ProviderPicker({ activeProvider, activeModel, onChange }: ProviderPicke
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 interface AnalyzePageProps {
+  lang: UILang
   onAskAboutThis: (result: AnalysisResult) => void
   onAnalysisDone?: (result: AnalysisResult) => void
 }
 
 // ── Pantalla Analizar ────────────────────────────────────────────────────────
-export function AnalyzePage({ onAskAboutThis, onAnalysisDone }: AnalyzePageProps): JSX.Element {
+export function AnalyzePage({ lang, onAskAboutThis, onAnalysisDone }: AnalyzePageProps): JSX.Element {
   const [input,        setInput]     = useState('')
   const [level,        setLevel]     = useState<Level>('medio')
   const [isAnalyzing,  setAnalyzing] = useState(false)
@@ -214,7 +224,7 @@ export function AnalyzePage({ onAskAboutThis, onAnalysisDone }: AnalyzePageProps
         onAnalysisDone?.(res)
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Error desconocido al contactar la IA'
+      const msg = err instanceof Error ? err.message : (lang === 'en' ? 'Unknown error while contacting AI' : 'Error desconocido al contactar la IA')
       setError(msg)
     } finally {
       setAnalyzing(false)
@@ -258,7 +268,7 @@ export function AnalyzePage({ onAskAboutThis, onAnalysisDone }: AnalyzePageProps
   }
 
   const chipTone = result ? (result.severity === 'low' ? 'ok' : result.severity === 'medium' ? 'warn' : 'err') : ''
-  const contextChip = input.trim().length === 0 ? null : (detectedLang ?? 'entrada')
+  const contextChip = input.trim().length === 0 ? null : (detectedLang ?? (lang === 'en' ? 'input' : 'entrada'))
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
@@ -268,14 +278,14 @@ export function AnalyzePage({ onAskAboutThis, onAnalysisDone }: AnalyzePageProps
 
         {/* Header: título + contexto detectado + acciones */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-          <h1 style={{ margin: 0, fontSize: 'var(--fs-18)', fontWeight: 600, letterSpacing: '-0.01em', color: 'var(--text-1)' }}>Analizar</h1>
+          <h1 style={{ margin: 0, fontSize: 'var(--fs-18)', fontWeight: 600, letterSpacing: '-0.01em', color: 'var(--text-1)' }}>{lang === 'en' ? 'Analyze' : 'Analizar'}</h1>
           {contextChip && <Chip tone="info" mono>{contextChip}</Chip>}
           <div style={{ flex: 1 }} />
           <button className="btn ghost" onClick={handlePasteExample} style={{ height: 30 }}>
-            <FileText style={{ width: 13, height: 13 }} /> Pegar ejemplo
+            <FileText style={{ width: 13, height: 13 }} /> {lang === 'en' ? 'Paste example' : 'Pegar ejemplo'}
           </button>
           <button className="btn ghost" onClick={handleClear} style={{ height: 30 }}>
-            <Trash2 style={{ width: 13, height: 13 }} /> Limpiar
+            <Trash2 style={{ width: 13, height: 13 }} /> {lang === 'en' ? 'Clear' : 'Limpiar'}
           </button>
         </div>
 
@@ -284,7 +294,7 @@ export function AnalyzePage({ onAskAboutThis, onAnalysisDone }: AnalyzePageProps
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Pega aquí tu error, log o snippet de código..."
+            placeholder={lang === 'en' ? 'Paste your error, log or code snippet here...' : 'Pega aquí tu error, log o snippet de código...'}
             style={{
               width: '100%', minHeight: 180, padding: '12px 14px',
               background: 'var(--bg-2)', border: '1px solid var(--border-1)',
@@ -298,14 +308,14 @@ export function AnalyzePage({ onAskAboutThis, onAnalysisDone }: AnalyzePageProps
             fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-4)',
             pointerEvents: 'none',
           }}>
-            {input.length} caracteres
+            {input.length} {lang === 'en' ? 'chars' : 'caracteres'}
           </div>
         </div>
 
         {/* Controles: nivel + proveedor + analizar */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 12 }}>
-          <span className="eyebrow">Nivel</span>
-          <LevelSeg value={level} onChange={setLevel} />
+          <span className="eyebrow">{lang === 'en' ? 'Level' : 'Nivel'}</span>
+          <LevelSeg lang={lang} value={level} onChange={setLevel} />
           <div style={{ flex: 1 }} />
           <ProviderPicker
             activeProvider={activeProvider}
@@ -326,8 +336,8 @@ export function AnalyzePage({ onAskAboutThis, onAnalysisDone }: AnalyzePageProps
             style={{ height: 30 }}
           >
             {isAnalyzing
-              ? <><Loader2 style={{ width: 14, height: 14 }} className="animate-spin" /> Analizando...</>
-              : <><Sparkles style={{ width: 14, height: 14 }} /> Analizar</>
+              ? <><Loader2 style={{ width: 14, height: 14 }} className="animate-spin" /> {lang === 'en' ? 'Analyzing...' : 'Analizando...'}</>
+              : <><Cpu style={{ width: 14, height: 14 }} /> {lang === 'en' ? 'Analyze' : 'Analizar'}</>
             }
           </button>
         </div>
@@ -350,10 +360,10 @@ export function AnalyzePage({ onAskAboutThis, onAnalysisDone }: AnalyzePageProps
                 background: 'var(--bg-2)', border: '1px solid var(--border-1)',
                 display: 'grid', placeItems: 'center',
               }}>
-                <Sparkles style={{ width: 22, height: 22, color: 'var(--text-3)' }} />
+                <Cpu style={{ width: 22, height: 22, color: 'var(--text-3)' }} />
               </div>
-              <h4 style={{ margin: 0 }}>El análisis aparecerá aquí</h4>
-              <p style={{ margin: 0 }}>Pega un error y Debuggle lo desglosa en partes legibles.</p>
+              <h4 style={{ margin: 0 }}>{lang === 'en' ? 'Analysis will appear here' : 'El análisis aparecerá aquí'}</h4>
+              <p style={{ margin: 0 }}>{lang === 'en' ? 'Paste an error and Debuggle breaks it down into readable parts.' : 'Pega un error y Debuggle lo desglosa en partes legibles.'}</p>
             </div>
           </div>
         )}
@@ -362,7 +372,7 @@ export function AnalyzePage({ onAskAboutThis, onAnalysisDone }: AnalyzePageProps
         {isAnalyzing && (
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, color: 'var(--text-3)' }}>
             <Loader2 style={{ width: 32, height: 32 }} className="animate-spin opacity-60" />
-            <p style={{ margin: 0, fontSize: 'var(--fs-13)' }}>Analizando con {getProvider(activeProvider).name}...</p>
+            <p style={{ margin: 0, fontSize: 'var(--fs-13)' }}>{lang === 'en' ? 'Analyzing with' : 'Analizando con'} {getProvider(activeProvider).name}...</p>
           </div>
         )}
 
@@ -372,7 +382,7 @@ export function AnalyzePage({ onAskAboutThis, onAnalysisDone }: AnalyzePageProps
             <AlertCircle style={{ width: 32, height: 32, color: 'var(--err)', opacity: 0.7 }} />
             <p style={{ margin: 0, fontSize: 'var(--fs-13)', color: 'var(--err)', textAlign: 'center' }}>{error}</p>
             <p style={{ margin: 0, fontSize: 'var(--fs-12)', color: 'var(--text-4)', textAlign: 'center' }}>
-              Comprueba tu API key en Config, o prueba con otro proveedor.
+              {lang === 'en' ? 'Check your API key in Config, or try another provider.' : 'Comprueba tu API key en Config, o prueba con otro proveedor.'}
             </p>
           </div>
         )}
@@ -388,7 +398,7 @@ export function AnalyzePage({ onAskAboutThis, onAnalysisDone }: AnalyzePageProps
               </Chip>
               <Chip tone="warn">{result.language}</Chip>
               <SeverityBadge severity={result.severity} />
-              {usedMock && <Chip>demo</Chip>}
+                {usedMock && <Chip>demo</Chip>}
               <div style={{ flex: 1 }} />
               <button
                 className="btn ghost"
@@ -398,10 +408,10 @@ export function AnalyzePage({ onAskAboutThis, onAnalysisDone }: AnalyzePageProps
                 style={{ height: 30, fontSize: 'var(--fs-12)' }}
               >
                 {isSaving
-                  ? <><Loader2 style={{ width: 13, height: 13 }} className="animate-spin" /> Guardando...</>
+                  ? <><Loader2 style={{ width: 13, height: 13 }} className="animate-spin" /> {lang === 'en' ? 'Saving...' : 'Guardando...'}</>
                   : savedOk
-                    ? <><BookmarkCheck style={{ width: 13, height: 13, color: 'var(--ok)' }} /> Guardado</>
-                    : <><BookmarkPlus style={{ width: 13, height: 13 }} /> Guardar en guía</>
+                    ? <><BookmarkCheck style={{ width: 13, height: 13, color: 'var(--ok)' }} /> {lang === 'en' ? 'Saved' : 'Guardado'}</>
+                    : <><BookmarkPlus style={{ width: 13, height: 13 }} /> {lang === 'en' ? 'Save to vault' : 'Guardar en guía'}</>
                 }
               </button>
               <button
@@ -409,7 +419,7 @@ export function AnalyzePage({ onAskAboutThis, onAnalysisDone }: AnalyzePageProps
                 onClick={() => onAskAboutThis(result)}
                 style={{ height: 30, fontSize: 'var(--fs-12)' }}
               >
-                <MessageSquare style={{ width: 13, height: 13 }} /> Preguntar
+                <MessageSquare style={{ width: 13, height: 13 }} /> {lang === 'en' ? 'Ask' : 'Preguntar'}
               </button>
             </div>
 
@@ -420,7 +430,7 @@ export function AnalyzePage({ onAskAboutThis, onAnalysisDone }: AnalyzePageProps
                   <span className="icn icn-anim-pulse" style={{ background: 'var(--warn-soft)', color: 'var(--warn)', border: '1px solid rgba(251,191,36,0.28)' }}>
                     <AlertTriangle style={{ width: 18, height: 18 }} />
                   </span>
-                  <h3 style={{ color: 'var(--warn)' }}>Qué pasó</h3>
+                  <h3 style={{ color: 'var(--warn)' }}>{lang === 'en' ? 'What happened' : 'Qué pasó'}</h3>
                 </div>
                 <div className="card-body"><p>{result.explanation}</p></div>
               </div>
@@ -430,7 +440,7 @@ export function AnalyzePage({ onAskAboutThis, onAnalysisDone }: AnalyzePageProps
                   <span className="icn icn-anim-glow" style={{ background: 'var(--ok-soft)', color: 'var(--ok)', border: '1px solid rgba(74,222,128,0.28)' }}>
                     <Lightbulb style={{ width: 18, height: 18 }} />
                   </span>
-                  <h3 style={{ color: 'var(--ok)' }}>Cómo solucionarlo</h3>
+                  <h3 style={{ color: 'var(--ok)' }}>{lang === 'en' ? 'How to fix it' : 'Cómo solucionarlo'}</h3>
                 </div>
                 <div className="card-body"><p>{result.solution}</p></div>
               </div>
@@ -443,7 +453,7 @@ export function AnalyzePage({ onAskAboutThis, onAnalysisDone }: AnalyzePageProps
                   <span className="icn icn-anim-bounce" style={{ background: 'var(--info-soft)', color: 'var(--info)', border: '1px solid rgba(96,165,250,0.28)' }}>
                     <Tag style={{ width: 18, height: 18 }} />
                   </span>
-                  <h3 style={{ color: 'var(--info)' }}>Términos clave</h3>
+                    <h3 style={{ color: 'var(--info)' }}>{lang === 'en' ? 'Key terms' : 'Términos clave'}</h3>
                 </div>
                 <div className="card-body" style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                   {result.terms.map((term) => (
@@ -460,7 +470,7 @@ export function AnalyzePage({ onAskAboutThis, onAnalysisDone }: AnalyzePageProps
                   <span className="icn icn-anim-spark" style={{ background: 'var(--purple-soft)', color: 'var(--purple)', border: '1px solid rgba(167,139,250,0.28)' }}>
                     <Code2 style={{ width: 18, height: 18 }} />
                   </span>
-                  <h3 style={{ color: 'var(--purple)' }}>Corrección sugerida</h3>
+                  <h3 style={{ color: 'var(--purple)' }}>{lang === 'en' ? 'Suggested fix' : 'Corrección sugerida'}</h3>
                 </div>
                 <div className="card-body">
                   <CodeBlock code={result.correctedCode} language={result.language} />
@@ -474,7 +484,7 @@ export function AnalyzePage({ onAskAboutThis, onAnalysisDone }: AnalyzePageProps
                 <span className="icn" style={{ background: 'var(--bg-3)', color: 'var(--text-2)', border: '1px solid var(--border-2)' }}>
                   <FileText style={{ width: 18, height: 18 }} />
                 </span>
-                <h3>Error original</h3>
+                <h3>{lang === 'en' ? 'Original error' : 'Error original'}</h3>
               </div>
               <div className="card-body">
                 <CodeBlock code={input} language="log" />

@@ -18,6 +18,7 @@ import type { AnalysisResult, Severity } from '@/lib/analyze'
 import { CodeBlock } from '@/components/ui/CodeBlock'
 import { Chip } from '@/components/ui/Chip'
 import { Severity as SeverityBadge } from '@/components/ui/Severity'
+import type { UILang } from '@/App'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -47,25 +48,24 @@ function entryToAnalysisResult(entry: VaultEntry): AnalysisResult {
   }
 }
 
-const LEVEL_LABELS: Record<string, string> = {
-  novato: 'Novato', medio: 'Medio', experto: 'Experto',
-}
-
-
+const LEVEL_LABELS_ES: Record<string, string> = { novato: 'Novato', medio: 'Medio', experto: 'Experto' }
+const LEVEL_LABELS_EN: Record<string, string> = { novato: 'Beginner', medio: 'Medium', experto: 'Expert' }
 
 // ── Props ──────────────────────────────────────────────────────────────────────
 interface VaultPageProps {
+  lang: UILang
   onAskAboutThis: (result: AnalysisResult) => void
 }
 
 // ── Pantalla Guía ─────────────────────────────────────────────────────────────
-export function VaultPage({ onAskAboutThis }: VaultPageProps): JSX.Element {
+export function VaultPage({ lang, onAskAboutThis }: VaultPageProps): JSX.Element {
   const [entries,     setEntries]     = useState<VaultMeta[]>([])
   const [selected,    setSelected]    = useState<VaultEntry | null>(null)
   const [loadingList, setLoadingList] = useState(true)
   const [loadingEntry,setLoadingEntry]= useState(false)
   const [deleting,    setDeleting]    = useState(false)
   const [search,      setSearch]      = useState('')
+  const LEVEL_LABELS = lang === 'en' ? LEVEL_LABELS_EN : LEVEL_LABELS_ES
 
   // ── Carga la lista al montar ──────────────────────────────────────────────
   useEffect(() => {
@@ -96,7 +96,9 @@ export function VaultPage({ onAskAboutThis }: VaultPageProps): JSX.Element {
   async function handleDelete(): Promise<void> {
     if (!selected || deleting) return
     const ok = window.confirm(
-      `¿Eliminar "${selected.errorType}"?\nEsta acción no se puede deshacer.`
+      lang === 'en'
+        ? `Delete "${selected.errorType}"?\nThis action cannot be undone.`
+        : `¿Eliminar "${selected.errorType}"?\nEsta acción no se puede deshacer.`
     )
     if (!ok) return
 
@@ -130,7 +132,7 @@ export function VaultPage({ onAskAboutThis }: VaultPageProps): JSX.Element {
         <div style={{ padding: '14px 14px 10px', display: 'flex', flexDirection: 'column', gap: 10, borderBottom: '1px solid var(--border-1)', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <BookOpen style={{ width: 16, height: 16, color: 'var(--text-2)' }} />
-            <span style={{ fontSize: 'var(--fs-14)', fontWeight: 600, color: 'var(--text-1)' }}>Mi Guía</span>
+            <span style={{ fontSize: 'var(--fs-14)', fontWeight: 600, color: 'var(--text-1)' }}>{lang === 'en' ? 'My Vault' : 'Mi Guía'}</span>
             <span className="chip" style={{ marginLeft: 'auto' }}>{entries.length}</span>
             <button className="icon-btn" title="Filtrar" style={{ width: 28, height: 28 }}>
               <Filter style={{ width: 13, height: 13 }} />
@@ -142,7 +144,7 @@ export function VaultPage({ onAskAboutThis }: VaultPageProps): JSX.Element {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar error o lenguaje..."
+              placeholder={lang === 'en' ? 'Search error or language...' : 'Buscar error o lenguaje...'}
               style={{ width: '100%', height: 32, paddingLeft: 32, paddingRight: search ? 32 : 12, background: 'var(--bg-2)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-2)', color: 'var(--text-1)', fontSize: 'var(--fs-12)', outline: 'none' }}
             />
             {search && (
@@ -158,7 +160,7 @@ export function VaultPage({ onAskAboutThis }: VaultPageProps): JSX.Element {
           {loadingList && (
             <div className="flex items-center justify-center h-24 gap-2 text-muted-foreground">
               <Loader2 className="size-4 animate-spin" />
-              <span className="text-xs">Cargando...</span>
+              <span className="text-xs">{lang === 'en' ? 'Loading...' : 'Cargando...'}</span>
             </div>
           )}
 
@@ -166,14 +168,14 @@ export function VaultPage({ onAskAboutThis }: VaultPageProps): JSX.Element {
             <div className="flex flex-col items-center justify-center h-full gap-2 text-muted-foreground px-4 text-center">
               <BookOpen className="size-8 opacity-20" />
               <p className="text-xs leading-relaxed opacity-60">
-                Guarda un análisis desde Analizar para verlo aquí.
+                {lang === 'en' ? 'Save an analysis from Analyze to see it here.' : 'Guarda un análisis desde Analizar para verlo aquí.'}
               </p>
             </div>
           )}
 
           {!loadingList && entries.length > 0 && filtered.length === 0 && (
             <div className="flex flex-col items-center justify-center h-24 gap-1 text-muted-foreground px-4 text-center">
-              <p className="text-xs opacity-60">Sin resultados para "{search}"</p>
+              <p className="text-xs opacity-60">{lang === 'en' ? `No results for "${search}"` : `Sin resultados para "${search}"`}</p>
             </div>
           )}
 
@@ -222,7 +224,7 @@ export function VaultPage({ onAskAboutThis }: VaultPageProps): JSX.Element {
             <div className="size-14 rounded-2xl bg-muted flex items-center justify-center">
               <BookOpen className="size-7 opacity-25" />
             </div>
-            <p className="text-sm opacity-60">Selecciona una entrada para leerla</p>
+            <p className="text-sm opacity-60">{lang === 'en' ? 'Select an entry to read it' : 'Selecciona una entrada para leerla'}</p>
           </div>
         )}
 
@@ -248,14 +250,14 @@ export function VaultPage({ onAskAboutThis }: VaultPageProps): JSX.Element {
                 <Chip>{LEVEL_LABELS[selected.level]}</Chip>
                 <div style={{ flex: 1 }} />
                 <button className="btn ghost" style={{ height: 28, fontSize: 'var(--fs-12)', gap: 6 }} onClick={() => onAskAboutThis(entryToAnalysisResult(selected))}>
-                  <MessageSquare style={{ width: 13, height: 13 }} /> Preguntar
+                  <MessageSquare style={{ width: 13, height: 13 }} /> {lang === 'en' ? 'Ask' : 'Preguntar'}
                 </button>
                 <button className="icon-btn" style={{ width: 28, height: 28 }} onClick={handleDelete} disabled={deleting} title="Eliminar">
                   {deleting ? <Loader2 style={{ width: 13, height: 13 }} className="animate-spin" /> : <Trash2 style={{ width: 13, height: 13 }} />}
                 </button>
               </div>
               <div style={{ fontSize: 'var(--fs-11)', color: 'var(--text-3)', marginTop: 8 }}>
-                Guardado · <span style={{ fontFamily: 'var(--font-mono)' }}>{formatDate(selected.date)}</span>
+                {lang === 'en' ? 'Saved' : 'Guardado'} · <span style={{ fontFamily: 'var(--font-mono)' }}>{formatDate(selected.date)}</span>
               </div>
             </div>
 
@@ -268,7 +270,7 @@ export function VaultPage({ onAskAboutThis }: VaultPageProps): JSX.Element {
                   <span className="icn icn-anim-pulse" style={{ background: 'var(--warn-soft)', color: 'var(--warn)', border: '1px solid rgba(251,191,36,0.28)' }}>
                     <AlertTriangle style={{ width: 18, height: 18 }} />
                   </span>
-                  <h3 style={{ color: 'var(--warn)' }}>Qué pasó</h3>
+                  <h3 style={{ color: 'var(--warn)' }}>{lang === 'en' ? 'What happened' : 'Qué pasó'}</h3>
                 </div>
                 <div className="card-body"><p>{selected.explanation}</p></div>
               </div>
@@ -279,7 +281,7 @@ export function VaultPage({ onAskAboutThis }: VaultPageProps): JSX.Element {
                   <span className="icn icn-anim-glow" style={{ background: 'var(--ok-soft)', color: 'var(--ok)', border: '1px solid rgba(74,222,128,0.28)' }}>
                     <Lightbulb style={{ width: 18, height: 18 }} />
                   </span>
-                  <h3 style={{ color: 'var(--ok)' }}>Cómo solucionarlo</h3>
+                  <h3 style={{ color: 'var(--ok)' }}>{lang === 'en' ? 'How to fix it' : 'Cómo solucionarlo'}</h3>
                 </div>
                 <div className="card-body"><p>{selected.solution}</p></div>
               </div>
@@ -291,7 +293,7 @@ export function VaultPage({ onAskAboutThis }: VaultPageProps): JSX.Element {
                     <span className="icn icn-anim-bounce" style={{ background: 'var(--info-soft)', color: 'var(--info)', border: '1px solid rgba(96,165,250,0.28)' }}>
                       <Tag style={{ width: 18, height: 18 }} />
                     </span>
-                    <h3 style={{ color: 'var(--info)' }}>Términos clave</h3>
+                    <h3 style={{ color: 'var(--info)' }}>{lang === 'en' ? 'Key terms' : 'Términos clave'}</h3>
                   </div>
                   <div className="card-body" style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                     {selected.terms.map((term) => (
@@ -308,7 +310,7 @@ export function VaultPage({ onAskAboutThis }: VaultPageProps): JSX.Element {
                     <span className="icn icn-anim-spark" style={{ background: 'var(--purple-soft)', color: 'var(--purple)', border: '1px solid rgba(167,139,250,0.28)' }}>
                       <Code2 style={{ width: 18, height: 18 }} />
                     </span>
-                    <h3 style={{ color: 'var(--purple)' }}>Corrección sugerida</h3>
+                    <h3 style={{ color: 'var(--purple)' }}>{lang === 'en' ? 'Suggested fix' : 'Corrección sugerida'}</h3>
                   </div>
                   <div className="card-body">
                     <CodeBlock code={selected.correctedCode} language={selected.language} />
@@ -322,7 +324,7 @@ export function VaultPage({ onAskAboutThis }: VaultPageProps): JSX.Element {
                   <span className="icn" style={{ background: 'var(--bg-3)', color: 'var(--text-2)', border: '1px solid var(--border-2)' }}>
                     <FileText style={{ width: 18, height: 18 }} />
                   </span>
-                  <h3>Error original</h3>
+                <h3>{lang === 'en' ? 'Original error' : 'Error original'}</h3>
                 </div>
                 <div className="card-body">
                   <CodeBlock code={selected.input} language="log" />

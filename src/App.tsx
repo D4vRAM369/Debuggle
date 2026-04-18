@@ -10,12 +10,27 @@ type UpdateState =
   | { status: 'available';  info: UpdateInfo }
   | { status: 'downloaded'; info: UpdateInfo }
 
-const WINDOW_LABELS: Record<TabId, string> = {
-  analyze: 'Analizar',
-  chat: 'Chat',
-  vault: 'Guía',
-  patterns: 'Patrones',
-  config: 'Config',
+export type UILang = 'es' | 'en'
+export type UITheme = 'dark' | 'light'
+export type UIDensity = 'cozy' | 'compact'
+
+export interface UIPrefs {
+  accent: string
+  lang: UILang
+  theme: UITheme
+  density: UIDensity
+}
+
+const WINDOW_LABELS: Record<UILang, Record<TabId, string>> = {
+  es: { analyze: 'Analizar', chat: 'Chat', vault: 'Guía', patterns: 'Patrones', config: 'Config' },
+  en: { analyze: 'Analyze', chat: 'Chat', vault: 'Vault', patterns: 'Patterns', config: 'Config' },
+}
+
+const DEFAULT_UI: UIPrefs = {
+  accent: '#1DA1F2',
+  lang: 'es',
+  theme: 'dark',
+  density: 'cozy',
 }
 
 // ── Banner de actualización ───────────────────────────────────────────────────
@@ -60,12 +75,45 @@ function App(): JSX.Element {
   const [activeTab,   setActiveTab]   = useState<TabId>('analyze')
   const [chatContext, setChatContext] = useState<AnalysisResult | null>(null)
   const [updateState, setUpdateState] = useState<UpdateState>({ status: 'idle' })
+  const [ui, setUi] = useState<UIPrefs>(DEFAULT_UI)
+  const [tweaksOpen, setTweaksOpen] = useState(false)
 
   // Registrar listeners del updater una sola vez al montar
   useEffect(() => {
     window.api.updater.onAvailable((info) => setUpdateState({ status: 'available',  info }))
     window.api.updater.onDownloaded((info) => setUpdateState({ status: 'downloaded', info }))
   }, [])
+
+  useEffect(() => {
+    const raw = localStorage.getItem('debuggle.ui')
+    if (!raw) return
+    try {
+      const parsed = JSON.parse(raw) as Partial<UIPrefs>
+      setUi({
+        accent: parsed.accent ?? DEFAULT_UI.accent,
+        lang: parsed.lang === 'en' ? 'en' : 'es',
+        theme: parsed.theme === 'light' ? 'light' : 'dark',
+        density: parsed.density === 'compact' ? 'compact' : 'cozy',
+      })
+    } catch {
+      // ignore broken persisted prefs
+    }
+  }, [])
+
+  useEffect(() => {
+    localStorage.setItem('debuggle.ui', JSON.stringify(ui))
+    document.documentElement.dataset.theme = ui.theme
+    document.documentElement.dataset.density = ui.density
+
+    const accentHex = ui.accent.replace('#', '')
+    const r = parseInt(accentHex.slice(0, 2), 16)
+    const g = parseInt(accentHex.slice(2, 4), 16)
+    const b = parseInt(accentHex.slice(4, 6), 16)
+    const root = document.documentElement.style
+    root.setProperty('--accent', ui.accent)
+    root.setProperty('--accent-soft', `rgba(${r},${g},${b},0.14)`)
+    root.setProperty('--accent-border', `rgba(${r},${g},${b},0.35)`)
+  }, [ui])
 
   function handleAskAboutThis(result: AnalysisResult): void {
     setChatContext(result)
@@ -80,13 +128,7 @@ function App(): JSX.Element {
     <div className="desktop">
       <div className="win">
         <div className="titlebar">
-          <div className="traffic">
-            <span className="c" />
-            <span className="m" />
-            <span className="x" />
-          </div>
-          <div className="title">Debuggle — {WINDOW_LABELS[activeTab]}</div>
-          <div style={{ width: 64 }} />
+          <div className="title">Debuggle — {WINDOW_LABELS[ui.lang][activeTab]}</div>
         </div>
 
         <UpdateBanner
@@ -102,6 +144,16 @@ function App(): JSX.Element {
             chatContext={chatContext}
             onAskAboutThis={handleAskAboutThis}
             onClearChatContext={handleClearChatContext}
+            ui={ui}
+            tweaksOpen={tweaksOpen}
+            onToggleLang={() => setUi((prev) => ({ ...prev, lang: prev.lang === 'es' ? 'en' : 'es' }))}
+            onToggleTheme={() => setUi((prev) => ({ ...prev, theme: prev.theme === 'dark' ? 'light' : 'dark' }))}
+            onToggleTweaks={() => setTweaksOpen((v) => !v)}
+            onCloseTweaks={() => setTweaksOpen(false)}
+            onAccentChange={(accent) => setUi((prev) => ({ ...prev, accent }))}
+            onThemeChange={(theme) => setUi((prev) => ({ ...prev, theme }))}
+            onDensityChange={(density) => setUi((prev) => ({ ...prev, density }))}
+            onLangChange={(lang) => setUi((prev) => ({ ...prev, lang }))}
           />
         </div>
       </div>

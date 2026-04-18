@@ -30,8 +30,9 @@ import {
   getProvider,
   getDefaultModel,
 } from '@/lib/providers'
+import type { UILang } from '@/App'
 
-export function ConfigPage(): JSX.Element {
+export function ConfigPage({ lang = 'es' }: { lang?: UILang }): JSX.Element {
   const [activeProvider, setActiveProvider] = useState<ProviderId>(DEFAULT_PROVIDER_ID)
   const [activeModel,    setActiveModel]    = useState<string>('')
   const [apiKey,         setApiKey]         = useState('')
@@ -102,9 +103,9 @@ export function ConfigPage(): JSX.Element {
 
       {/* Título */}
       <div>
-        <h2 className="text-base font-semibold text-foreground">Configuración</h2>
+        <h2 className="text-base font-semibold text-foreground">{lang === 'en' ? 'Configuration' : 'Configuración'}</h2>
         <p className="text-xs text-muted-foreground mt-0.5">
-          Elige el proveedor de IA y configura tu API key
+          {lang === 'en' ? 'Choose the AI provider and configure your API key' : 'Elige el proveedor de IA y configura tu API key'}
         </p>
       </div>
 
@@ -113,7 +114,7 @@ export function ConfigPage(): JSX.Element {
       {/* ── Selector de proveedor ── */}
       <div className="space-y-3">
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-          Proveedor de IA
+          {lang === 'en' ? 'AI provider' : 'Proveedor de IA'}
         </p>
         <div className="grid grid-cols-2 gap-2">
           {PROVIDERS.map((p) => (
@@ -135,11 +136,11 @@ export function ConfigPage(): JSX.Element {
               <div className="flex items-center justify-between w-full">
                 <span className="text-sm font-medium text-foreground">{p.name}</span>
                 {p.models.some(m => m.free) && (
-                  <Badge variant="secondary" className="text-xs py-0">gratis</Badge>
+                  <Badge variant="secondary" className="text-xs py-0">{lang === 'en' ? 'free' : 'gratis'}</Badge>
                 )}
               </div>
               <span className="text-xs text-muted-foreground">
-                {p.needsKey ? 'Requiere API key' : 'Sin API key — local'}
+                {p.needsKey ? (lang === 'en' ? 'Requires API key' : 'Requiere API key') : (lang === 'en' ? 'No API key — local' : 'Sin API key — local')}
               </span>
             </button>
           ))}
@@ -149,14 +150,14 @@ export function ConfigPage(): JSX.Element {
       {/* ── Selector de modelo ── */}
       <div className="space-y-2">
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-          Modelo
+          {lang === 'en' ? 'Model' : 'Modelo'}
         </p>
         <Select
           value={activeModel || getDefaultModel(activeProvider)}
           onValueChange={setActiveModel}
         >
           <SelectTrigger className="w-full">
-            <SelectValue placeholder="Elige un modelo..." />
+            <SelectValue placeholder={lang === 'en' ? 'Choose a model...' : 'Elige un modelo...'} />
           </SelectTrigger>
           <SelectContent>
             {provider.models.map((m) => (
@@ -164,7 +165,7 @@ export function ConfigPage(): JSX.Element {
                 <div className="flex items-center gap-2">
                   <span>{m.label}</span>
                   <span className="text-xs text-muted-foreground">{m.context}</span>
-                  {m.free && <Badge variant="secondary" className="text-xs py-0">gratis</Badge>}
+                  {m.free && <Badge variant="secondary" className="text-xs py-0">{lang === 'en' ? 'free' : 'gratis'}</Badge>}
                 </div>
               </SelectItem>
             ))}
@@ -187,7 +188,7 @@ export function ConfigPage(): JSX.Element {
               onClick={(e) => { e.preventDefault(); window.open(provider.docsURL) }}
             >
               <ExternalLink className="size-3" />
-              Obtener key
+              {lang === 'en' ? 'Get key' : 'Obtener key'}
             </a>
           </div>
 
@@ -198,14 +199,14 @@ export function ConfigPage(): JSX.Element {
                   <div className="flex items-center gap-2">
                     <Shield className="size-3.5 text-emerald-500" />
                     <span className="text-xs text-emerald-500">
-                      API key guardada en el llavero del sistema
+                      {lang === 'en' ? 'API key saved in system keychain' : 'API key guardada en el llavero del sistema'}
                     </span>
                   </div>
                   <button
                     onClick={handleDeleteKey}
                     className="text-xs text-muted-foreground hover:text-red-400 transition-colors"
                   >
-                    Eliminar
+                    {lang === 'en' ? 'Delete' : 'Eliminar'}
                   </button>
                 </div>
               </CardContent>
@@ -217,7 +218,7 @@ export function ConfigPage(): JSX.Element {
               type={showKey ? 'text' : 'password'}
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
-              placeholder={hasExistingKey ? 'Nueva key (dejar vacío para mantener la actual)' : provider.keyLabel}
+              placeholder={hasExistingKey ? (lang === 'en' ? 'New key (leave empty to keep current)' : 'Nueva key (dejar vacío para mantener la actual)') : provider.keyLabel}
               className={cn(
                 'w-full h-9 rounded-md border border-input bg-transparent px-3 py-1 pr-9',
                 'text-sm shadow-sm transition-colors placeholder:text-muted-foreground',
@@ -235,7 +236,7 @@ export function ConfigPage(): JSX.Element {
 
           <p className="text-xs text-muted-foreground flex items-center gap-1">
             <Shield className="size-3 opacity-60" />
-            La key se guarda cifrada en el llavero nativo del SO, nunca en texto plano.
+            {lang === 'en' ? 'The key is stored encrypted in the native OS keychain, never in plain text.' : 'La key se guarda cifrada en el llavero nativo del SO, nunca en texto plano.'}
           </p>
         </div>
       )}
@@ -245,15 +246,15 @@ export function ConfigPage(): JSX.Element {
         <Card className="border-border">
           <CardHeader className="pb-2 pt-3 px-4">
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-              Configuración de Ollama
+              {lang === 'en' ? 'Ollama setup' : 'Configuración de Ollama'}
             </p>
           </CardHeader>
           <CardContent className="px-4 pb-3 space-y-2 text-xs text-muted-foreground">
-            <p>Ollama corre en tu máquina. No necesita API key ni internet.</p>
+            <p>{lang === 'en' ? 'Ollama runs locally. It needs no API key or internet.' : 'Ollama corre en tu máquina. No necesita API key ni internet.'}</p>
             <ol className="space-y-1 list-decimal list-inside">
-              <li>Instala Ollama desde <span className="text-foreground">ollama.com</span></li>
-              <li>Descarga un modelo: <code className="text-foreground bg-muted px-1 rounded">ollama pull llama3.2</code></li>
-              <li>Ollama arranca automáticamente en <code className="text-foreground bg-muted px-1 rounded">localhost:11434</code></li>
+              <li>{lang === 'en' ? 'Install Ollama from' : 'Instala Ollama desde'} <span className="text-foreground">ollama.com</span></li>
+              <li>{lang === 'en' ? 'Download a model:' : 'Descarga un modelo:'} <code className="text-foreground bg-muted px-1 rounded">ollama pull llama3.2</code></li>
+              <li>{lang === 'en' ? 'Ollama starts automatically on' : 'Ollama arranca automáticamente en'} <code className="text-foreground bg-muted px-1 rounded">localhost:11434</code></li>
             </ol>
           </CardContent>
         </Card>
@@ -266,10 +267,10 @@ export function ConfigPage(): JSX.Element {
         className="gap-2 mt-auto self-start"
       >
         {saving
-          ? <><Loader2 className="size-4 animate-spin" /> Guardando...</>
+          ? <><Loader2 className="size-4 animate-spin" /> {lang === 'en' ? 'Saving...' : 'Guardando...'}</>
           : saved
-            ? <><Check className="size-4 text-emerald-400" /> ¡Guardado!</>
-            : 'Guardar configuración'
+            ? <><Check className="size-4 text-emerald-400" /> {lang === 'en' ? 'Saved!' : '¡Guardado!'}</>
+            : (lang === 'en' ? 'Save configuration' : 'Guardar configuración')
         }
       </Button>
 

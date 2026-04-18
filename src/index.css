@@ -122,7 +122,7 @@ body {
   @apply bg-background text-foreground;
   height: 100vh;
   overflow: hidden;
-  background: #000;
+  background: var(--bg-1);
 }
 
 #root {
@@ -141,3 +141,11 @@ body {
 ::-webkit-scrollbar-track        { background: transparent; }
 ::-webkit-scrollbar-thumb        { background: rgba(151, 164, 255, 0.22); border-radius: 9999px; }
 ::-webkit-scrollbar-thumb:hover  { background: rgba(151, 164, 255, 0.36); }
+
+/* Force code surfaces to stay near-black, overriding highlight.js theme bg */
+.code pre,
+.code pre code,
+.code pre code.hljs,
+pre code.hljs {
+  background: #05070b !important;
+}

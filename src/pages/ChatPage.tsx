@@ -22,6 +22,7 @@ import { cn } from '@/lib/utils'
 import type { AnalysisResult, Severity } from '@/lib/analyze'
 import { sendChatMessage, type ChatMessage } from '@/lib/chat'
 import { getProvider, DEFAULT_PROVIDER_ID, getDefaultModel, type ProviderId } from '@/lib/providers'
+import type { UILang } from '@/App'
 
 // ── Estilos de severidad (reutilizados de AnalyzePage) ────────────────────
 const SEVERITY_STYLES: Record<Severity, string> = {
@@ -35,8 +36,10 @@ const SEVERITY_STYLES: Record<Severity, string> = {
 // Si hay contexto, le pasamos el análisis para que la IA pueda responder
 // preguntas específicas. Si no, modo genérico de debugging.
 
-function buildSystemPrompt(context: AnalysisResult | null): string {
-  const base = `Eres un experto en debugging de código que ayuda a desarrolladores a entender y resolver errores. Eres conversacional, claro y pedagógico. Respondes siempre en español.`
+function buildSystemPrompt(context: AnalysisResult | null, lang: UILang): string {
+  const base = lang === 'en'
+    ? `You are an expert debugging assistant. Be conversational, clear, and pedagogical. Reply in English.`
+    : `Eres un experto en debugging de código que ayuda a desarrolladores a entender y resolver errores. Eres conversacional, claro y pedagógico. Respondes siempre en español.`
 
   if (!context) return base
 
@@ -56,6 +59,7 @@ El usuario puede hacerte preguntas de seguimiento sobre este error. Responde de 
 // ── Props ──────────────────────────────────────────────────────────────────
 
 interface ChatPageProps {
+  lang: UILang
   context:          AnalysisResult | null
   onClearContext:   () => void
 }
@@ -132,7 +136,7 @@ function TypingIndicator(): JSX.Element {
 
 // ── Pantalla Chat principal ───────────────────────────────────────────────
 
-export function ChatPage({ context, onClearContext }: ChatPageProps): JSX.Element {
+export function ChatPage({ lang, context, onClearContext }: ChatPageProps): JSX.Element {
   const [messages,       setMessages]       = useState<ChatMessage[]>([])
   const [input,          setInput]          = useState('')
   const [isSending,      setIsSending]      = useState(false)
@@ -189,7 +193,7 @@ export function ChatPage({ context, onClearContext }: ChatPageProps): JSX.Elemen
       if (!provider.needsKey || apiKey) {
         const response = await sendChatMessage({
           messages:     updatedMessages,
-          systemPrompt: buildSystemPrompt(context),
+          systemPrompt: buildSystemPrompt(context, lang),
           provider:     activeProvider,
           model:        modelToUse,
           apiKey:       apiKey ?? undefined,
@@ -198,14 +202,16 @@ export function ChatPage({ context, onClearContext }: ChatPageProps): JSX.Elemen
       } else {
         setMessages(prev => [...prev, {
           role: 'assistant',
-          content: '⚠️ No hay API key configurada. Ve a Config para añadir una clave y vuelve a intentarlo.',
+          content: lang === 'en'
+            ? '⚠️ No API key configured. Go to Config, add one, and try again.'
+            : '⚠️ No hay API key configurada. Ve a Config para añadir una clave y vuelve a intentarlo.',
         }])
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Error desconocido'
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: `❌ Error al contactar la IA: ${msg}`,
+        content: lang === 'en' ? `❌ Error contacting AI: ${msg}` : `❌ Error al contactar la IA: ${msg}`,
       }])
     } finally {
       setIsSending(false)
@@ -229,7 +235,7 @@ export function ChatPage({ context, onClearContext }: ChatPageProps): JSX.Elemen
       {context && (
         <div className="flex items-center gap-2 px-4 py-2 bg-primary/5 border-b border-border/80">
           <MessageSquare className="size-3.5 text-primary/60 shrink-0" />
-          <span className="text-xs text-muted-foreground">Contexto del análisis:</span>
+          <span className="text-xs text-muted-foreground">{lang === 'en' ? 'Analysis context:' : 'Contexto del análisis:'}</span>
           <Badge variant="outline" className={cn('text-xs border', SEVERITY_STYLES[context.severity])}>
             {context.errorType}
           </Badge>
@@ -237,7 +243,7 @@ export function ChatPage({ context, onClearContext }: ChatPageProps): JSX.Elemen
           <button
             onClick={onClearContext}
             className="ml-auto p-0.5 text-muted-foreground hover:text-foreground transition-colors rounded"
-            title="Quitar contexto"
+            title={lang === 'en' ? 'Clear context' : 'Quitar contexto'}
           >
             <X className="size-3.5" />
           </button>
@@ -257,12 +263,12 @@ export function ChatPage({ context, onClearContext }: ChatPageProps): JSX.Elemen
               <p className="text-sm font-medium">
                 {context
                   ? `Preguntas sobre "${context.errorType}"`
-                  : 'Asistente de debugging'}
+                  : (lang === 'en' ? 'Debugging assistant' : 'Asistente de debugging')}
               </p>
               <p className="text-xs opacity-55 max-w-[240px] leading-relaxed">
                 {context
-                  ? 'Tengo el contexto del análisis. ¿Qué no quedó claro?'
-                  : 'Pega un error, describe un problema o pregunta lo que necesites.'}
+                  ? (lang === 'en' ? 'I have the analysis context. What should we clarify?' : 'Tengo el contexto del análisis. ¿Qué no quedó claro?')
+                  : (lang === 'en' ? 'Paste an error, describe a problem, or ask what you need.' : 'Pega un error, describe un problema o pregunta lo que necesites.')}
               </p>
             </div>
           </div>
@@ -292,7 +298,7 @@ export function ChatPage({ context, onClearContext }: ChatPageProps): JSX.Elemen
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={context ? `¿Qué más quieres saber sobre ${context.errorType}?` : 'Escribe tu pregunta... (Enter para enviar)'}
+              placeholder={context ? (lang === 'en' ? `What else do you want to know about ${context.errorType}?` : `¿Qué más quieres saber sobre ${context.errorType}?`) : (lang === 'en' ? 'Type your question... (Enter to send)' : 'Escribe tu pregunta... (Enter para enviar)')}
               rows={1}
               disabled={isSending}
               style={{ border: 'none', background: 'transparent', flex: 1, minHeight: 44, resize: 'none', fontSize: 'var(--fs-13)', color: 'var(--text-1)', outline: 'none' }}
@@ -307,7 +313,7 @@ export function ChatPage({ context, onClearContext }: ChatPageProps): JSX.Elemen
             </button>
           </div>
           <div style={{ marginTop: 6, fontSize: 'var(--fs-11)', color: 'var(--text-4)', display: 'flex', justifyContent: 'space-between', padding: '0 4px' }}>
-            <span>Enter para enviar · Shift+Enter nueva línea</span>
+            <span>{lang === 'en' ? 'Enter to send · Shift+Enter new line' : 'Enter para enviar · Shift+Enter nueva línea'}</span>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
               <Cpu style={{ width: 10, height: 10 }} /> {providerName}
             </span>

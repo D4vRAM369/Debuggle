@@ -12,6 +12,7 @@ import { BarChart2, RefreshCw, AlertTriangle, Code2, Hash, Layers } from 'lucide
 import { cn } from '@/lib/utils'
 import { computeStats } from '@/lib/stats'
 import type { VaultMeta } from '@/types/api'
+import type { UILang } from '@/App'
 
 // ── Subcomponentes ─────────────────────────────────────────────────────────────
 
@@ -92,7 +93,7 @@ function FreqBar({
 
 // ── Página principal ───────────────────────────────────────────────────────────
 
-export function PatternsPage(): JSX.Element {
+export function PatternsPage({ lang = 'es' }: { lang?: UILang }): JSX.Element {
   const [entries, setEntries] = useState<VaultMeta[]>([])
   const [loading, setLoading] = useState(true)
   const [range, setRange] = useState<'7d' | '30d' | 'all'>('30d')
@@ -160,7 +161,7 @@ export function PatternsPage(): JSX.Element {
     return (
       <div className="flex items-center justify-center h-full gap-2 text-muted-foreground">
         <RefreshCw size={16} className="animate-spin opacity-40" />
-        <span className="text-sm opacity-40">Cargando patrones…</span>
+        <span className="text-sm opacity-40">{lang === 'en' ? 'Loading patterns…' : 'Cargando patrones…'}</span>
       </div>
     )
   }
@@ -172,8 +173,8 @@ export function PatternsPage(): JSX.Element {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-end', gap: 14, flexWrap: 'wrap' }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: 'var(--fs-22)', fontWeight: 600, letterSpacing: '-0.015em', color: 'var(--text-1)' }}>Patrones</h1>
-          <p style={{ margin: '4px 0 0', fontSize: 'var(--fs-13)', color: 'var(--text-3)' }}>Resumen de tus errores analizados</p>
+          <h1 style={{ margin: 0, fontSize: 'var(--fs-22)', fontWeight: 600, letterSpacing: '-0.015em', color: 'var(--text-1)' }}>{lang === 'en' ? 'Patterns' : 'Patrones'}</h1>
+          <p style={{ margin: '4px 0 0', fontSize: 'var(--fs-13)', color: 'var(--text-3)' }}>{lang === 'en' ? 'Summary of your analyzed errors' : 'Resumen de tus errores analizados'}</p>
         </div>
         <div style={{ flex: 1 }} />
         <div className="seg" style={{ marginLeft: 'auto' }}>
@@ -188,16 +189,16 @@ export function PatternsPage(): JSX.Element {
 
       {/* Tarjetas resumen — 4 columnas */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 12 }}>
-        <StatCard icon={Hash}          label="Total entradas"          value={stats.totalEntries} />
-        <StatCard icon={Layers}        label="Tipos únicos"            value={stats.uniqueErrors} />
-        <StatCard icon={AlertTriangle} label="Error más frecuente"     value={stats.topError?.split(':')[0] ?? null} sub={stats.topError ?? undefined} color="var(--err)" />
-        <StatCard icon={Code2}         label="Lenguaje con más fallos" value={stats.topLanguage}  color="var(--warn)" />
+        <StatCard icon={Hash}          label={lang === 'en' ? 'Total entries' : 'Total entradas'}          value={stats.totalEntries} />
+        <StatCard icon={Layers}        label={lang === 'en' ? 'Unique types' : 'Tipos únicos'}            value={stats.uniqueErrors} />
+        <StatCard icon={AlertTriangle} label={lang === 'en' ? 'Most frequent error' : 'Error más frecuente'}     value={stats.topError?.split(':')[0] ?? null} sub={stats.topError ?? undefined} color="var(--err)" />
+        <StatCard icon={Code2}         label={lang === 'en' ? 'Language with most failures' : 'Lenguaje con más fallos'} value={stats.topLanguage}  color="var(--warn)" />
       </div>
 
       {/* Frecuencia de errores */}
       {topErrors.length > 0 && (
         <section style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <div className="eyebrow">Errores más frecuentes</div>
+          <div className="eyebrow">{lang === 'en' ? 'Most frequent errors' : 'Errores más frecuentes'}</div>
           <div style={{ background: 'var(--bg-2)', border: '1px solid var(--border-1)', borderRadius: 'var(--radius-3)', overflow: 'hidden' }}>
             {topErrors.map(([type, count], i) => (
               <FreqBar key={type} label={type} count={count} max={maxError} color={ERR_COLORS[i] ?? 'var(--info)'} />
@@ -209,7 +210,7 @@ export function PatternsPage(): JSX.Element {
       {/* Frecuencia de lenguajes */}
       {topLangs.length > 0 && (
         <section style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <div className="eyebrow">Lenguajes</div>
+          <div className="eyebrow">{lang === 'en' ? 'Languages' : 'Lenguajes'}</div>
           <div style={{ background: 'var(--bg-2)', border: '1px solid var(--border-1)', borderRadius: 'var(--radius-3)', overflow: 'hidden' }}>
             {topLangs.map(([lang, count], i) => (
               <FreqBar key={lang} label={lang} count={count} max={maxLang} color={LANG_COLORS[i] ?? 'var(--info)'} bold />
@@ -221,7 +222,7 @@ export function PatternsPage(): JSX.Element {
       {/* Errores repetidos */}
       {repeatedList.length > 0 && (
         <section style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <div className="eyebrow">Errores recurrentes</div>
+          <div className="eyebrow">{lang === 'en' ? 'Recurring errors' : 'Errores recurrentes'}</div>
           <div style={{ background: 'var(--bg-2)', border: '1px solid var(--border-1)', borderRadius: 'var(--radius-3)', overflow: 'hidden' }}>
             {repeatedList.map((item, i) => {
               const c = item.count >= 4 ? 'var(--err)' : item.count >= 2 ? 'var(--warn)' : 'var(--info)'
