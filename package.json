@@ -14,10 +14,14 @@
     "postinstall": "electron-builder install-app-deps",
     "test": "vitest run",
     "test:watch": "vitest",
-    "pack:win": "electron-vite build && electron-builder --win",
-    "pack:linux": "electron-vite build && electron-builder --linux AppImage deb rpm",
-    "pack:linux:docker": "electron-vite build && electron-builder --linux AppImage deb rpm --docker",
-    "pack:all": "electron-vite build && electron-builder --win --linux AppImage deb rpm"
+    "pack:win": "electron-vite build && electron-builder --win nsis msi portable",
+    "pack:mac": "electron-vite build && electron-builder --mac dmg zip",
+    "pack:linux": "electron-vite build && electron-builder --linux AppImage deb rpm flatpak",
+    "pack:linux:docker": "electron-vite build && electron-builder --linux AppImage deb rpm flatpak --docker",
+    "pack:all": "electron-vite build && electron-builder --win nsis msi portable --mac dmg zip --linux AppImage deb rpm flatpak",
+    "pack:ci:win": "electron-vite build && electron-builder --win nsis msi portable --publish never",
+    "pack:ci:mac": "electron-vite build && electron-builder --mac dmg zip --publish never",
+    "pack:ci:linux": "electron-vite build && electron-builder --linux AppImage deb rpm flatpak --publish never"
   },
   "devDependencies": {
     "@electron-toolkit/tsconfig": "^1.0.1",
@@ -60,20 +64,45 @@
     "appId": "dev.d4vram.debuggle",
     "productName": "Debuggle",
     "icon": "resources/icon.png",
+    "extraResources": [
+      {
+        "from": "resources/icon.png",
+        "to": "icon.png"
+      }
+    ],
     "directories": {
       "output": "release"
     },
     "win": {
+      "icon": "resources/icon.ico",
       "target": [
         {
           "target": "nsis",
           "arch": [
             "x64"
           ]
+        },
+        {
+          "target": "msi",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
         }
       ]
     },
+    "nsis": {
+      "installerIcon": "resources/icon.ico",
+      "uninstallerIcon": "resources/icon.ico",
+      "installerHeaderIcon": "resources/icon.ico"
+    },
     "mac": {
+      "icon": "resources/icon.icns",
       "target": [
         {
           "target": "dmg",
@@ -92,6 +121,7 @@
       ]
     },
     "linux": {
+      "icon": "assets/icons",
       "target": [
         {
           "target": "AppImage",

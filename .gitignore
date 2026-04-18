@@ -19,6 +19,7 @@ Debuggle_polished/
 .letta/
 .claude/
 .omc/
+.codex
 
 # Vault personal — datos privados del usuario
 vault/
@@ -26,3 +27,6 @@ vault/
 # Companion visual de brainstorming
 .superpowers/
 .omx/
+
+# Carpetas de respaldo temporales de assets
+_archive/

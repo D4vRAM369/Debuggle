@@ -283,6 +283,13 @@ ipcMain.handle('config:delete-key', async (_event, service: string): Promise<voi
 
 // ── Ventana principal ────────────────────────────────────────────────────────
 
+function resolveWindowIcon(): string | undefined {
+  if (process.platform !== 'linux' && process.platform !== 'win32') return undefined
+  const devIconPath = join(process.cwd(), 'resources', 'icon.png')
+  const prodIconPath = join(process.resourcesPath, 'icon.png')
+  return app.isPackaged ? prodIconPath : devIconPath
+}
+
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
     width: 960,
@@ -292,6 +299,7 @@ function createWindow(): void {
     show: false,
     autoHideMenuBar: true,
     title: 'Debuggle',
+    icon: resolveWindowIcon(),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
