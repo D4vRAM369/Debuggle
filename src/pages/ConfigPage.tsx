@@ -32,7 +32,12 @@ import {
 } from '@/lib/providers'
 import type { UILang } from '@/App'
 
-export function ConfigPage({ lang = 'es' }: { lang?: UILang }): JSX.Element {
+interface ConfigPageProps {
+  lang?: UILang
+  onReplayOnboarding?: () => void
+}
+
+export function ConfigPage({ lang = 'es', onReplayOnboarding }: ConfigPageProps): JSX.Element {
   const [activeProvider, setActiveProvider] = useState<ProviderId>(DEFAULT_PROVIDER_ID)
   const [activeModel,    setActiveModel]    = useState<string>('')
   const [apiKey,         setApiKey]         = useState('')
@@ -273,6 +278,28 @@ export function ConfigPage({ lang = 'es' }: { lang?: UILang }): JSX.Element {
             : (lang === 'en' ? 'Save configuration' : 'Guardar configuración')
         }
       </Button>
+
+      <Card className="border-border w-full max-w-xl mt-2">
+        <CardHeader className="pb-2 pt-3 px-4">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+            {lang === 'en' ? 'Onboarding' : 'Onboarding'}
+          </p>
+        </CardHeader>
+        <CardContent className="px-4 pb-3 flex items-center justify-between gap-3">
+          <p className="text-xs text-muted-foreground">
+            {lang === 'en'
+              ? 'Replay the first-run guide anytime.'
+              : 'Vuelve a ver la guía inicial cuando quieras.'}
+          </p>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => onReplayOnboarding?.()}
+          >
+            {lang === 'en' ? 'View again' : 'Ver de nuevo'}
+          </Button>
+        </CardContent>
+      </Card>
 
     </div>
   )

@@ -54,6 +54,7 @@ interface AppShellProps {
   chatContext:        AnalysisResult | null
   onAskAboutThis:     (result: AnalysisResult) => void
   onClearChatContext: () => void
+  onReplayOnboarding: () => void
   ui: UIPrefs
   tweaksOpen: boolean
   onToggleLang: () => void
@@ -72,6 +73,7 @@ export function AppShell({
   chatContext,
   onAskAboutThis,
   onClearChatContext,
+  onReplayOnboarding,
   ui,
   tweaksOpen,
   onToggleLang,
@@ -97,7 +99,7 @@ export function AppShell({
       case 'patterns':
         return <PatternsPage lang={ui.lang} />
       case 'config':
-        return <ConfigPage lang={ui.lang} />
+        return <ConfigPage lang={ui.lang} onReplayOnboarding={onReplayOnboarding} />
     }
   }
 

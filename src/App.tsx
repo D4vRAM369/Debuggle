@@ -3,6 +3,7 @@ import { AppShell, type TabId } from '@/components/layout/AppShell'
 import type { AnalysisResult } from '@/lib/analyze'
 import type { UpdateInfo } from '@/types/api'
 import { Download, RefreshCw, X } from 'lucide-react'
+import { OnboardingPage } from '@/pages/OnboardingPage'
 
 // ── Tipos de estado del updater ───────────────────────────────────────────────
 type UpdateState =
@@ -32,6 +33,8 @@ const DEFAULT_UI: UIPrefs = {
   theme: 'dark',
   density: 'cozy',
 }
+
+const ONBOARDING_KEY = 'debuggle.onboarding.v1'
 
 // ── Banner de actualización ───────────────────────────────────────────────────
 function UpdateBanner({ state, onDismiss, onInstall }: {
@@ -77,6 +80,8 @@ function App(): JSX.Element {
   const [updateState, setUpdateState] = useState<UpdateState>({ status: 'idle' })
   const [ui, setUi] = useState<UIPrefs>(DEFAULT_UI)
   const [tweaksOpen, setTweaksOpen] = useState(false)
+  const [onboardingReady, setOnboardingReady] = useState(false)
+  const [showOnboarding, setShowOnboarding] = useState(false)
 
   // Registrar listeners del updater una sola vez al montar
   useEffect(() => {
@@ -97,6 +102,23 @@ function App(): JSX.Element {
       })
     } catch {
       // ignore broken persisted prefs
+    }
+  }, [])
+
+  useEffect(() => {
+    const raw = localStorage.getItem(ONBOARDING_KEY)
+    if (!raw) {
+      setShowOnboarding(true)
+      setOnboardingReady(true)
+      return
+    }
+    try {
+      const parsed = JSON.parse(raw) as { completed?: boolean }
+      setShowOnboarding(!parsed.completed)
+    } catch {
+      setShowOnboarding(true)
+    } finally {
+      setOnboardingReady(true)
     }
   }, [])
 
@@ -124,6 +146,29 @@ function App(): JSX.Element {
     setChatContext(null)
   }
 
+  function persistOnboardingState(completed: boolean, skipped: boolean): void {
+    localStorage.setItem(
+      ONBOARDING_KEY,
+      JSON.stringify({
+        completed,
+        skipped,
+        completedAt: completed ? new Date().toISOString() : null,
+      }),
+    )
+  }
+
+  function handleOnboardingFinish(skipped: boolean): void {
+    persistOnboardingState(true, skipped)
+    setShowOnboarding(false)
+    setActiveTab('analyze')
+  }
+
+  function handleReplayOnboarding(): void {
+    setTweaksOpen(false)
+    setActiveTab('analyze')
+    setShowOnboarding(true)
+  }
+
   return (
     <div className="desktop">
       <div className="win">
@@ -138,23 +183,28 @@ function App(): JSX.Element {
         />
 
         <div className="win-body">
-          <AppShell
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            chatContext={chatContext}
-            onAskAboutThis={handleAskAboutThis}
-            onClearChatContext={handleClearChatContext}
-            ui={ui}
-            tweaksOpen={tweaksOpen}
-            onToggleLang={() => setUi((prev) => ({ ...prev, lang: prev.lang === 'es' ? 'en' : 'es' }))}
-            onToggleTheme={() => setUi((prev) => ({ ...prev, theme: prev.theme === 'dark' ? 'light' : 'dark' }))}
-            onToggleTweaks={() => setTweaksOpen((v) => !v)}
-            onCloseTweaks={() => setTweaksOpen(false)}
-            onAccentChange={(accent) => setUi((prev) => ({ ...prev, accent }))}
-            onThemeChange={(theme) => setUi((prev) => ({ ...prev, theme }))}
-            onDensityChange={(density) => setUi((prev) => ({ ...prev, density }))}
-            onLangChange={(lang) => setUi((prev) => ({ ...prev, lang }))}
-          />
+          {onboardingReady && showOnboarding ? (
+            <OnboardingPage lang={ui.lang} onFinish={handleOnboardingFinish} />
+          ) : (
+            <AppShell
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              chatContext={chatContext}
+              onAskAboutThis={handleAskAboutThis}
+              onClearChatContext={handleClearChatContext}
+              onReplayOnboarding={handleReplayOnboarding}
+              ui={ui}
+              tweaksOpen={tweaksOpen}
+              onToggleLang={() => setUi((prev) => ({ ...prev, lang: prev.lang === 'es' ? 'en' : 'es' }))}
+              onToggleTheme={() => setUi((prev) => ({ ...prev, theme: prev.theme === 'dark' ? 'light' : 'dark' }))}
+              onToggleTweaks={() => setTweaksOpen((v) => !v)}
+              onCloseTweaks={() => setTweaksOpen(false)}
+              onAccentChange={(accent) => setUi((prev) => ({ ...prev, accent }))}
+              onThemeChange={(theme) => setUi((prev) => ({ ...prev, theme }))}
+              onDensityChange={(density) => setUi((prev) => ({ ...prev, density }))}
+              onLangChange={(lang) => setUi((prev) => ({ ...prev, lang }))}
+            />
+          )}
         </div>
       </div>
     </div>
