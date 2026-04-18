@@ -2,12 +2,12 @@
 
 > Your personal debugging assistant. Paste an error, understand it at your level, save it, and never repeat it.
 
+![Debuggle Banner](assets/branding/debuggle-readme-banner-1600x500.png)
+
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-orange?logo=anthropic)](https://claude.ai/claude-code)
 [![Electron](https://img.shields.io/badge/Electron-33-47848F?logo=electron)](https://electronjs.org)
 [![React](https://img.shields.io/badge/React-18-61DAFB?logo=react)](https://react.dev)
-
-<!-- Screenshot coming soon -->
 
 ---
 
@@ -90,14 +90,16 @@ pnpm test
 
 ```bash
 pnpm build
-pnpm electron-builder
+pnpm pack:all
 ```
 
 Outputs in `release/`:
 
 | Platform | Format | Notes |
 |---|---|---|
-| Windows | `.exe` (NSIS) | Built on Windows |
+| Windows | `.exe` (NSIS) | Standard installer |
+| Windows | `.msi` | Enterprise-friendly installer |
+| Windows | `.portable` | No-install executable |
 | macOS | `.dmg` + `.zip` | x64 + Apple Silicon (arm64) |
 | Linux | `.AppImage` | Universal, no install needed |
 | Linux | `.deb` | Ubuntu, Debian, Linux Mint |
@@ -179,4 +181,4 @@ See [LICENSE](LICENSE) for the full text.
 
 ## Acknowledgements
 
-Built with [Claude Code](https://claude.ai/claude-code) by Anthropic.
+Built with [Claude Code](https://claude.ai/claude-code) by Anthropic and GPT-5.3-Codex.

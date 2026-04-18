@@ -2,12 +2,12 @@
 
 > Tu asistente personal de debugging. Pega un error, entiéndelo a tu nivel, guárdalo, y no vuelvas a repetirlo.
 
+![Banner de Debuggle](assets/branding/debuggle-readme-banner-1600x500.png)
+
 [![Licencia: AGPL-3.0](https://img.shields.io/badge/Licencia-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Construido con Claude Code](https://img.shields.io/badge/Construido%20con-Claude%20Code-orange?logo=anthropic)](https://claude.ai/claude-code)
 [![Electron](https://img.shields.io/badge/Electron-33-47848F?logo=electron)](https://electronjs.org)
 [![React](https://img.shields.io/badge/React-18-61DAFB?logo=react)](https://react.dev)
-
-![Captura de Debuggle](docs/assets/screenshot.png)
 
 ---
 
@@ -74,7 +74,7 @@ Debuggle es una aplicación de escritorio para desarrolladores que quieren **ent
 ### Instalar y ejecutar
 
 ```bash
-git clone https://github.com/tu-usuario/debuggle.git
+git clone https://github.com/D4vRAM369/debuggle.git
 cd debuggle
 pnpm install
 pnpm dev
@@ -90,14 +90,16 @@ pnpm test
 
 ```bash
 pnpm build
-pnpm electron-builder
+pnpm pack:all
 ```
 
 Resultados en `release/`:
 
 | Plataforma | Formato | Notas |
 |---|---|---|
-| Windows | `.exe` (NSIS) | Compilar en Windows |
+| Windows | `.exe` (NSIS) | Instalador estándar |
+| Windows | `.msi` | Instalador orientado a entornos empresariales |
+| Windows | `.portable` | Ejecutable sin instalación |
 | macOS | `.dmg` + `.zip` | x64 + Apple Silicon (arm64) |
 | Linux | `.AppImage` | Universal, sin instalación |
 | Linux | `.deb` | Ubuntu, Debian, Linux Mint |
@@ -171,7 +173,7 @@ Debuggle es software libre bajo la **GNU Affero General Public License v3.0 (AGP
 
 Eres libre de usar, modificar y distribuir este software bajo los términos de la AGPL-3.0. Si ejecutas una versión modificada como servicio de red, debes hacer tu código fuente disponible.
 
-Para **licencias comerciales** (si quieres usar Debuggle en un producto o servicio propietario sin las obligaciones de la AGPL), contacta: [tu-email@ejemplo.com]
+Para **licencias comerciales** (si quieres usar Debuggle en un producto o servicio propietario sin las obligaciones de la AGPL), abre un issue en GitHub.
 
 Consulta [LICENSE](LICENSE) para el texto completo.
 
@@ -179,4 +181,4 @@ Consulta [LICENSE](LICENSE) para el texto completo.
 
 ## Agradecimientos
 
-Construido con [Claude Code](https://claude.ai/claude-code) de Anthropic.
+Construido con [Claude Code](https://claude.ai/claude-code) de Anthropic y GPT-5.3-Codex.
