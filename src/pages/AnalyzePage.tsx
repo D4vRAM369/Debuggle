@@ -1,47 +1,46 @@
 import { useState, useEffect, useRef } from 'react'
-import { Sparkles, Trash2, BookmarkPlus, BookmarkCheck, Loader2, AlertCircle, Cpu, MessageSquare, ChevronDown, AlertTriangle, Lightbulb, Tag, Code2, ShieldAlert, Info } from 'lucide-react'
-import { Textarea } from '@/components/ui/textarea'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/separator'
+import {
+  Sparkles, Trash2, BookmarkPlus, BookmarkCheck, Loader2, AlertCircle, Cpu,
+  MessageSquare, ChevronDown, AlertTriangle, Lightbulb, Tag, Code2, FileText,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
   type Level,
   type AnalysisResult,
-  type Severity,
   detectLanguage,
   analyzeMock,
 } from '@/lib/analyze'
 import { analyzeWithAI } from '@/lib/ai'
 import { type ProviderId, getProvider, DEFAULT_PROVIDER_ID, getDefaultModel, PROVIDERS } from '@/lib/providers'
 import { CodeBlock } from '@/components/ui/CodeBlock'
+import { Chip } from '@/components/ui/Chip'
+import { Severity as SeverityBadge } from '@/components/ui/Severity'
 
-// ── Selector de nivel ────────────────────────────────────────────────────────
+const SAMPLE_ERROR = `$ cargo run
+error[E0308]: mismatched types
+  --> src/main.rs:14:23
+   |
+14 |     let user_id: u32 = response.id;
+   |                  ---   ^^^^^^^^^^^ expected \`u32\`, found \`String\`
+   |                  |
+   |                  expected due to this`
+
+// ── Segmented nivel ──────────────────────────────────────────────────────────
 const LEVELS: { id: Level; label: string }[] = [
   { id: 'novato',  label: 'Novato'  },
   { id: 'medio',   label: 'Medio'   },
   { id: 'experto', label: 'Experto' },
 ]
 
-function LevelSelector({
-  value,
-  onChange,
-}: {
-  value: Level
-  onChange: (l: Level) => void
-}): JSX.Element {
+function LevelSeg({ value, onChange }: { value: Level; onChange: (l: Level) => void }): JSX.Element {
   return (
-    <div className="flex items-center gap-1 rounded-md border border-border p-0.5 bg-muted/40">
+    <div className="seg">
       {LEVELS.map((lvl) => (
         <button
           key={lvl.id}
+          type="button"
+          aria-pressed={value === lvl.id}
           onClick={() => onChange(lvl.id)}
-          className={cn(
-            'px-3 py-1 rounded text-xs font-medium transition-colors',
-            value === lvl.id
-              ? 'bg-background text-foreground shadow-sm'
-              : 'text-muted-foreground hover:text-foreground'
-          )}
         >
           {lvl.label}
         </button>
@@ -50,40 +49,7 @@ function LevelSelector({
   )
 }
 
-// ── Badge de severidad ───────────────────────────────────────────────────────
-const SEVERITY_STYLES: Record<Severity, string> = {
-  low:      'bg-blue-500/15   text-blue-400   border-blue-500/30',
-  medium:   'bg-yellow-500/15 text-yellow-400 border-yellow-500/30',
-  high:     'bg-orange-500/15 text-orange-400 border-orange-500/30',
-  critical: 'bg-red-500/15    text-red-400    border-red-500/30',
-}
-
-const SEVERITY_LABELS: Record<Severity, string> = {
-  low: 'Bajo', medium: 'Medio', high: 'Alto', critical: 'Crítico',
-}
-
-const SEVERITY_ACCENT: Record<Severity, string> = {
-  low:      'border-l-blue-500/70   bg-blue-500/[0.04]',
-  medium:   'border-l-yellow-400/70 bg-yellow-400/[0.04]',
-  high:     'border-l-orange-500/70 bg-orange-500/[0.04]',
-  critical: 'border-l-red-500/70    bg-red-500/[0.04]',
-}
-
-function SeverityIcon({ severity }: { severity: Severity }): JSX.Element {
-  const cls = {
-    low:      'text-blue-400',
-    medium:   'text-yellow-400',
-    high:     'text-orange-400',
-    critical: 'text-red-400',
-  }[severity]
-  if (severity === 'critical') return <ShieldAlert className={cn('size-4 shrink-0', cls)} />
-  if (severity === 'high')     return <AlertTriangle className={cn('size-4 shrink-0', cls)} />
-  if (severity === 'medium')   return <AlertTriangle className={cn('size-4 shrink-0', cls)} />
-  return <Info className={cn('size-4 shrink-0', cls)} />
-}
-
-
-// ── Selector de proveedor + modelo ───────────────────────────────────────────
+// ── Pill selector proveedor + modelo ─────────────────────────────────────────
 interface ProviderPickerProps {
   activeProvider: ProviderId
   activeModel:    string
@@ -94,7 +60,6 @@ function ProviderPicker({ activeProvider, activeModel, onChange }: ProviderPicke
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
-  // Cierra al hacer click fuera
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
@@ -109,46 +74,57 @@ function ProviderPicker({ activeProvider, activeModel, onChange }: ProviderPicke
                   ?? provider.name
 
   return (
-    <div className="relative" ref={ref}>
+    <div style={{ position: 'relative' }} ref={ref}>
       <button
+        type="button"
         onClick={() => setOpen(v => !v)}
-        className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+        style={{
+          display: 'inline-flex', alignItems: 'center', gap: 8,
+          padding: '0 12px', height: 30,
+          background: 'var(--bg-3)', border: '1px solid var(--border-1)',
+          borderRadius: 999, fontSize: 'var(--fs-12)', color: 'var(--text-2)',
+          cursor: 'pointer',
+        }}
       >
-        <Cpu className="size-3" />
-        <span>{provider.name}</span>
-        <span className="text-white/20">·</span>
-        <span className="max-w-[80px] truncate opacity-70">{modelLabel}</span>
-        <ChevronDown className={cn('size-3 transition-transform', open && 'rotate-180')} />
+        <span style={{
+          width: 6, height: 6, borderRadius: '50%',
+          background: 'var(--ok)', boxShadow: '0 0 8px var(--ok)',
+        }} />
+        <span style={{ color: 'var(--text-1)', fontWeight: 600 }}>{provider.name}</span>
+        <span style={{ color: 'var(--text-4)' }}>·</span>
+        <span>{modelLabel}</span>
+        <ChevronDown style={{ width: 13, height: 13, color: 'var(--text-3)', transition: 'transform .15s', transform: open ? 'rotate(180deg)' : 'none' }} />
       </button>
 
       {open && (
-        <div className="absolute top-full mt-2 right-0 z-50 w-64 rounded-xl border border-white/10 bg-[rgba(12,14,24,0.97)] shadow-2xl backdrop-blur-xl overflow-hidden">
-          <div className="max-h-72 overflow-y-auto">
+        <div style={{
+          position: 'absolute', top: 'calc(100% + 6px)', right: 0, zIndex: 50,
+          width: 260, background: 'var(--bg-1)', border: '1px solid var(--border-2)',
+          borderRadius: 12, boxShadow: '0 16px 48px rgba(0,0,0,0.4)', overflow: 'hidden',
+        }}>
+          <div style={{ maxHeight: 288, overflowY: 'auto' }}>
             {PROVIDERS.map((prov) => (
               <div key={prov.id}>
-                {/* Cabecera del proveedor */}
-                <div className="px-3 pt-2.5 pb-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+                <div style={{ padding: '8px 12px 4px', fontSize: 10, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--text-4)' }}>
                   {prov.name}
                 </div>
-                {/* Modelos del proveedor */}
                 {prov.models.map((model) => {
                   const isActive = prov.id === activeProvider && model.id === activeModel
                   return (
                     <button
                       key={model.id}
+                      type="button"
                       onClick={() => { onChange(prov.id, model.id); setOpen(false) }}
-                      className={cn(
-                        'flex w-full items-center justify-between px-3 py-1.5 text-xs transition-colors',
-                        isActive
-                          ? 'bg-primary/15 text-primary'
-                          : 'text-muted-foreground hover:bg-white/[0.05] hover:text-foreground'
-                      )}
+                      style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        width: '100%', padding: '6px 12px', fontSize: 'var(--fs-12)',
+                        background: isActive ? 'var(--accent-soft)' : 'transparent',
+                        color: isActive ? 'var(--accent)' : 'var(--text-2)',
+                        border: 'none', cursor: 'pointer',
+                      }}
                     >
-                      <span className="truncate">{model.label}</span>
-                      <span className={cn(
-                        'ml-2 shrink-0 text-[10px]',
-                        model.free ? 'text-emerald-500/70' : 'text-orange-400/60'
-                      )}>
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{model.label}</span>
+                      <span style={{ marginLeft: 8, flexShrink: 0, fontSize: 10, color: model.free ? 'var(--ok)' : 'var(--warn)' }}>
                         {model.context}
                       </span>
                     </button>
@@ -165,9 +141,7 @@ function ProviderPicker({ activeProvider, activeModel, onChange }: ProviderPicke
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 interface AnalyzePageProps {
-  /** Callback invocado al pulsar "Preguntar sobre esto" — navega al Chat con contexto */
   onAskAboutThis: (result: AnalysisResult) => void
-  /** Callback invocado cuando llega un resultado — actualiza el semáforo en AppShell */
   onAnalysisDone?: (result: AnalysisResult) => void
 }
 
@@ -183,11 +157,9 @@ export function AnalyzePage({ onAskAboutThis, onAnalysisDone }: AnalyzePageProps
   const [isSaving,     setIsSaving]  = useState(false)
   const [savedOk,      setSavedOk]   = useState(false)
 
-  // Configuración activa (se carga desde prefs al montar)
   const [activeProvider, setActiveProvider] = useState<ProviderId>(DEFAULT_PROVIDER_ID)
   const [activeModel,    setActiveModel]    = useState<string>('')
 
-  // Carga las preferencias guardadas al montar el componente
   useEffect(() => {
     async function loadPrefs(): Promise<void> {
       const [savedProvider, savedModel] = await Promise.all([
@@ -200,7 +172,6 @@ export function AnalyzePage({ onAskAboutThis, onAnalysisDone }: AnalyzePageProps
     loadPrefs()
   }, [])
 
-  // Detecta el lenguaje en tiempo real mientras escribes
   useEffect(() => {
     if (input.trim().length < 10) { setLang(null); return }
     const lang = detectLanguage(input)
@@ -220,14 +191,12 @@ export function AnalyzePage({ onAskAboutThis, onAnalysisDone }: AnalyzePageProps
       const provider   = getProvider(activeProvider)
       const modelToUse = activeModel || getDefaultModel(activeProvider)
 
-      // Obtener la API key si el proveedor la necesita
       let apiKey: string | null = null
       if (provider.needsKey) {
         apiKey = await window.api.config.getKey(activeProvider)
       }
 
       if (!provider.needsKey || apiKey) {
-        // ✅ IA real — proveedor configurado
         const res = await analyzeWithAI({
           input,
           level:    currentLevel,
@@ -239,7 +208,6 @@ export function AnalyzePage({ onAskAboutThis, onAnalysisDone }: AnalyzePageProps
         setUsedMock(false)
         onAnalysisDone?.(res)
       } else {
-        // ⚠️ Sin API key → modo demo (mock)
         const res = await analyzeMock(input, currentLevel)
         setResult(res)
         setUsedMock(true)
@@ -285,100 +253,125 @@ export function AnalyzePage({ onAskAboutThis, onAnalysisDone }: AnalyzePageProps
     setSavedOk(false)
   }
 
-  async function handleSwitchLevel(): Promise<void> {
-    const next: Level = level === 'novato' ? 'medio' : level === 'medio' ? 'experto' : 'novato'
-    setLevel(next)
-    if (!input.trim()) return
-    await handleAnalyze(next)
+  function handlePasteExample(): void {
+    setInput(SAMPLE_ERROR)
   }
 
+  const chipTone = result ? (result.severity === 'low' ? 'ok' : result.severity === 'medium' ? 'warn' : 'err') : ''
+
   return (
-    <div className="flex flex-col h-full p-5 gap-4">
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
 
       {/* ── Zona de entrada ── */}
-      <div className="flex flex-col gap-3">
+      <div style={{ padding: '20px 20px 0' }}>
 
-        {/* Textarea con badge de lenguaje detectado */}
-        <div className="relative">
-          <Textarea
+        {/* Header: título + stdin + pegar ejemplo + limpiar */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+          <h1 style={{ margin: 0, fontSize: 'var(--fs-18)', fontWeight: 600, letterSpacing: '-0.01em', color: 'var(--text-1)' }}>Analizar</h1>
+          <Chip tone="info" mono>stdin</Chip>
+          {detectedLang && <Chip>{detectedLang}</Chip>}
+          <div style={{ flex: 1 }} />
+          <button className="btn ghost" onClick={handlePasteExample} style={{ height: 30 }}>
+            <FileText style={{ width: 13, height: 13 }} /> Pegar ejemplo
+          </button>
+          <button className="btn ghost" onClick={handleClear} style={{ height: 30 }}>
+            <Trash2 style={{ width: 13, height: 13 }} /> Limpiar
+          </button>
+        </div>
+
+        {/* Textarea con contador */}
+        <div style={{ position: 'relative' }}>
+          <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Pega aquí tu error, log o snippet de código..."
-            className="min-h-[160px] font-mono text-sm resize-none pr-4 rounded-none"
+            style={{
+              width: '100%', minHeight: 180, padding: '12px 14px',
+              background: 'var(--bg-2)', border: '1px solid var(--border-1)',
+              borderRadius: 'var(--radius-3)', color: 'var(--text-1)',
+              fontFamily: 'var(--font-mono)', fontSize: 12.5, lineHeight: 1.55,
+              resize: 'vertical', outline: 'none',
+            }}
           />
-          {detectedLang && (
-            <Badge
-              variant="outline"
-              className="absolute top-2 right-2 text-xs pointer-events-none"
-            >
-              {detectedLang}
-            </Badge>
-          )}
+          <div style={{
+            position: 'absolute', right: 10, bottom: 8,
+            fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-4)',
+            pointerEvents: 'none',
+          }}>
+            {input.length} caracteres
+          </div>
         </div>
 
-        {/* Controles: nivel + selector proveedor + botón analizar */}
-        <div className="flex items-center justify-between gap-3">
-          <LevelSelector value={level} onChange={setLevel} />
-          <div className="flex items-center gap-2">
-            {/* Selector de proveedor + modelo */}
-            <ProviderPicker
-              activeProvider={activeProvider}
-              activeModel={activeModel || getDefaultModel(activeProvider)}
-              onChange={async (prov, model) => {
-                setActiveProvider(prov)
-                setActiveModel(model)
-                await Promise.all([
-                  window.api.config.setPref('activeProvider', prov),
-                  window.api.config.setPref('activeModel', model),
-                ])
-              }}
-            />
-            {(input || result) && (
-              <Button variant="ghost" size="icon" onClick={handleClear} title="Limpiar">
-                <Trash2 className="size-4" />
-              </Button>
-            )}
-            <Button
-              onClick={() => handleAnalyze()}
-              disabled={!input.trim() || isAnalyzing}
-              className="gap-2"
-            >
-              {isAnalyzing
-                ? <><Loader2 className="size-4 animate-spin" /> Analizando...</>
-                : <><Sparkles className="size-4" /> Analizar</>
-              }
-            </Button>
-          </div>
+        {/* Controles: nivel + proveedor + analizar */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 12 }}>
+          <span className="eyebrow">Nivel</span>
+          <LevelSeg value={level} onChange={setLevel} />
+          <div style={{ flex: 1 }} />
+          <ProviderPicker
+            activeProvider={activeProvider}
+            activeModel={activeModel || getDefaultModel(activeProvider)}
+            onChange={async (prov, model) => {
+              setActiveProvider(prov)
+              setActiveModel(model)
+              await Promise.all([
+                window.api.config.setPref('activeProvider', prov),
+                window.api.config.setPref('activeModel', model),
+              ])
+            }}
+          />
+          <button
+            className="btn primary"
+            onClick={() => handleAnalyze()}
+            disabled={!input.trim() || isAnalyzing}
+            style={{ height: 30 }}
+          >
+            {isAnalyzing
+              ? <><Loader2 style={{ width: 14, height: 14 }} className="animate-spin" /> Analizando...</>
+              : <><Sparkles style={{ width: 14, height: 14 }} /> Analizar</>
+            }
+          </button>
         </div>
       </div>
 
-      <Separator />
-
       {/* ── Zona de resultados ── */}
-      <div className="flex-1 overflow-auto">
+      <div style={{ flex: 1, minHeight: 0, padding: 20, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
 
         {/* Estado vacío */}
         {!result && !isAnalyzing && !error && (
-          <div className="flex flex-col items-center justify-center h-full gap-2 text-muted-foreground">
-            <Sparkles className="size-8 opacity-30" />
-            <p className="text-sm">El análisis aparecerá aquí</p>
+          <div style={{
+            flex: 1, border: '1px dashed var(--border-2)',
+            borderRadius: 'var(--radius-3)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            minHeight: 200,
+          }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, color: 'var(--text-3)' }}>
+              <div style={{
+                width: 56, height: 56, borderRadius: 14,
+                background: 'var(--bg-2)', border: '1px solid var(--border-1)',
+                display: 'grid', placeItems: 'center',
+              }}>
+                <Sparkles style={{ width: 22, height: 22, color: 'var(--text-3)' }} />
+              </div>
+              <h4 style={{ margin: 0, fontSize: 'var(--fs-14)', fontWeight: 500, color: 'var(--text-2)' }}>El análisis aparecerá aquí</h4>
+              <p style={{ margin: 0, fontSize: 'var(--fs-12)', color: 'var(--text-4)' }}>Pega un error y pulsa Analizar</p>
+            </div>
           </div>
         )}
 
-        {/* Spinner mientras analiza */}
+        {/* Spinner */}
         {isAnalyzing && (
-          <div className="flex flex-col items-center justify-center h-full gap-2 text-muted-foreground">
-            <Loader2 className="size-8 animate-spin opacity-50" />
-            <p className="text-sm">Analizando con {getProvider(activeProvider).name}...</p>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, color: 'var(--text-3)' }}>
+            <Loader2 style={{ width: 32, height: 32 }} className="animate-spin opacity-60" />
+            <p style={{ margin: 0, fontSize: 'var(--fs-13)' }}>Analizando con {getProvider(activeProvider).name}...</p>
           </div>
         )}
 
-        {/* Error de la llamada a la IA */}
+        {/* Error */}
         {error && !isAnalyzing && (
-          <div className="flex flex-col items-center justify-center h-full gap-3 text-muted-foreground px-8">
-            <AlertCircle className="size-8 text-red-400 opacity-70" />
-            <p className="text-sm text-center text-red-400/80">{error}</p>
-            <p className="text-xs text-center opacity-60">
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, padding: 32 }}>
+            <AlertCircle style={{ width: 32, height: 32, color: 'var(--err)', opacity: 0.7 }} />
+            <p style={{ margin: 0, fontSize: 'var(--fs-13)', color: 'var(--err)', textAlign: 'center' }}>{error}</p>
+            <p style={{ margin: 0, fontSize: 'var(--fs-12)', color: 'var(--text-4)', textAlign: 'center' }}>
               Comprueba tu API key en Config, o prueba con otro proveedor.
             </p>
           </div>
@@ -386,119 +379,108 @@ export function AnalyzePage({ onAskAboutThis, onAnalysisDone }: AnalyzePageProps
 
         {/* Resultado */}
         {result && !isAnalyzing && (
-          <div className={cn(
-            'rounded-xl border border-border border-l-4 overflow-hidden',
-            SEVERITY_ACCENT[result.severity]
-          )}>
-            {/* Header */}
-            <div className="flex items-start gap-3 px-4 py-3 border-b border-border/50">
-              <SeverityIcon severity={result.severity} />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground leading-tight truncate">
-                  {result.errorType}
-                </p>
-                <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                  <span className={cn('text-[11px] px-2 py-0.5 rounded-full border font-medium', SEVERITY_STYLES[result.severity])}>
-                    {SEVERITY_LABELS[result.severity]}
-                  </span>
-                  <span className="text-[11px] px-2 py-0.5 rounded-full border border-border text-muted-foreground font-mono">
-                    {result.language}
-                  </span>
-                  {usedMock && (
-                    <span className="text-[11px] px-2 py-0.5 rounded-full border border-dashed border-border text-muted-foreground/60">
-                      demo
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
 
-            {/* Secciones */}
-            <div className="divide-y divide-border/40">
-              <div className="px-4 py-3 space-y-1.5">
-                <div className="flex items-center gap-1.5 text-muted-foreground">
-                  <AlertTriangle className="size-3.5" />
-                  <span className="text-[11px] font-semibold uppercase tracking-wider">Qué pasó</span>
-                </div>
-                <p className="text-sm text-foreground leading-relaxed">{result.explanation}</p>
-              </div>
-
-              <div className="px-4 py-3 space-y-1.5">
-                <div className="flex items-center gap-1.5 text-muted-foreground">
-                  <Lightbulb className="size-3.5" />
-                  <span className="text-[11px] font-semibold uppercase tracking-wider">Cómo solucionarlo</span>
-                </div>
-                <p className="text-sm text-foreground leading-relaxed">{result.solution}</p>
-              </div>
-
-              {result.terms.length > 0 && (
-                <div className="px-4 py-3 space-y-1.5">
-                  <div className="flex items-center gap-1.5 text-muted-foreground">
-                    <Tag className="size-3.5" />
-                    <span className="text-[11px] font-semibold uppercase tracking-wider">Términos clave</span>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {result.terms.map((term) => (
-                      <span
-                        key={term}
-                        className="text-xs px-2 py-0.5 rounded-md bg-accent text-accent-foreground font-mono cursor-default hover:bg-primary/15 hover:text-primary transition-colors"
-                      >
-                        {term}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {result.correctedCode && (
-                <div className="px-4 py-3 space-y-1.5">
-                  <div className="flex items-center gap-1.5 text-muted-foreground">
-                    <Code2 className="size-3.5" />
-                    <span className="text-[11px] font-semibold uppercase tracking-wider">Corrección sugerida</span>
-                  </div>
-                  <CodeBlock code={result.correctedCode} language={result.language} />
-                </div>
-              )}
-            </div>
-
-            {/* Footer */}
-            <div className="flex items-center gap-1.5 px-4 py-2 border-t border-border/50 bg-muted/10 flex-wrap">
-              <Button
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  'gap-1.5 h-7 text-xs',
-                  savedOk && 'text-emerald-500 hover:text-emerald-500'
-                )}
+            {/* Chips header + acciones */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <Chip tone={chipTone as 'ok' | 'warn' | 'err'} lg>
+                {result.errorType.length > 36 ? result.errorType.slice(0, 35) + '…' : result.errorType}
+              </Chip>
+              <Chip tone="warn">{result.language}</Chip>
+              <SeverityBadge severity={result.severity} />
+              {usedMock && <Chip>demo</Chip>}
+              <div style={{ flex: 1 }} />
+              <button
+                className="btn ghost"
                 onClick={handleSave}
                 disabled={isSaving || usedMock || savedOk}
                 title={usedMock ? 'No disponible en modo demo' : undefined}
+                style={{ height: 30, fontSize: 'var(--fs-12)' }}
               >
                 {isSaving
-                  ? <><Loader2 className="size-3 animate-spin" /> Guardando...</>
+                  ? <><Loader2 style={{ width: 13, height: 13 }} className="animate-spin" /> Guardando...</>
                   : savedOk
-                    ? <><BookmarkCheck className="size-3" /> Guardado</>
-                    : <><BookmarkPlus className="size-3" /> Guardar</>
+                    ? <><BookmarkCheck style={{ width: 13, height: 13, color: 'var(--ok)' }} /> Guardado</>
+                    : <><BookmarkPlus style={{ width: 13, height: 13 }} /> Guardar en guía</>
                 }
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="gap-1.5 h-7 text-xs text-primary"
+              </button>
+              <button
+                className="btn"
                 onClick={() => onAskAboutThis(result)}
+                style={{ height: 30, fontSize: 'var(--fs-12)' }}
               >
-                <MessageSquare className="size-3" />
-                Preguntar
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleSwitchLevel}
-                className="h-7 text-xs text-muted-foreground ml-auto"
-              >
-                Ver en {level === 'novato' ? 'Medio' : level === 'medio' ? 'Experto' : 'Novato'}
-              </Button>
+                <MessageSquare style={{ width: 13, height: 13 }} /> Preguntar
+              </button>
             </div>
+
+            {/* Qué pasó + Cómo solucionarlo — 2 columnas */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div className="card">
+                <div className="card-head">
+                  <span className="icn icn-anim-pulse" style={{ background: 'var(--warn-soft)', color: 'var(--warn)', border: '1px solid rgba(251,191,36,0.28)' }}>
+                    <AlertTriangle style={{ width: 18, height: 18 }} />
+                  </span>
+                  <h3 style={{ color: 'var(--warn)' }}>Qué pasó</h3>
+                </div>
+                <div className="card-body"><p>{result.explanation}</p></div>
+              </div>
+
+              <div className="card">
+                <div className="card-head">
+                  <span className="icn icn-anim-glow" style={{ background: 'var(--ok-soft)', color: 'var(--ok)', border: '1px solid rgba(74,222,128,0.28)' }}>
+                    <Lightbulb style={{ width: 18, height: 18 }} />
+                  </span>
+                  <h3 style={{ color: 'var(--ok)' }}>Cómo solucionarlo</h3>
+                </div>
+                <div className="card-body"><p>{result.solution}</p></div>
+              </div>
+            </div>
+
+            {/* Términos clave */}
+            {result.terms.length > 0 && (
+              <div className="card">
+                <div className="card-head">
+                  <span className="icn icn-anim-bounce" style={{ background: 'var(--info-soft)', color: 'var(--info)', border: '1px solid rgba(96,165,250,0.28)' }}>
+                    <Tag style={{ width: 18, height: 18 }} />
+                  </span>
+                  <h3 style={{ color: 'var(--info)' }}>Términos clave</h3>
+                </div>
+                <div className="card-body" style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {result.terms.map((term) => (
+                    <span key={term} className="chip info mono">#{term}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Corrección sugerida */}
+            {result.correctedCode && (
+              <div className="card">
+                <div className="card-head">
+                  <span className="icn icn-anim-spark" style={{ background: 'var(--purple-soft)', color: 'var(--purple)', border: '1px solid rgba(167,139,250,0.28)' }}>
+                    <Code2 style={{ width: 18, height: 18 }} />
+                  </span>
+                  <h3 style={{ color: 'var(--purple)' }}>Corrección sugerida</h3>
+                </div>
+                <div className="card-body">
+                  <CodeBlock code={result.correctedCode} language={result.language} />
+                </div>
+              </div>
+            )}
+
+            {/* Error original */}
+            <div className="card">
+              <div className="card-head">
+                <span className="icn" style={{ background: 'var(--bg-3)', color: 'var(--text-2)', border: '1px solid var(--border-2)' }}>
+                  <FileText style={{ width: 18, height: 18 }} />
+                </span>
+                <h3>Error original</h3>
+              </div>
+              <div className="card-body">
+                <CodeBlock code={input} language="log" />
+              </div>
+            </div>
+
           </div>
         )}
       </div>

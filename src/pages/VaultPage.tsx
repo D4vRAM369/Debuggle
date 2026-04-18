@@ -10,14 +10,14 @@
 import { useState, useEffect } from 'react'
 import {
   BookOpen, Search, Trash2, MessageSquare,
-  Loader2, X, AlertTriangle, Lightbulb, Tag, Code2, FileText
+  Loader2, X, AlertTriangle, Lightbulb, Tag, Code2, FileText, Filter
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import type { VaultMeta, VaultEntry } from '@/types/api'
 import type { AnalysisResult, Severity } from '@/lib/analyze'
 import { CodeBlock } from '@/components/ui/CodeBlock'
+import { Chip } from '@/components/ui/Chip'
+import { Severity as SeverityBadge } from '@/components/ui/Severity'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -45,25 +45,6 @@ function entryToAnalysisResult(entry: VaultEntry): AnalysisResult {
     terms:        entry.terms,
     correctedCode: entry.correctedCode,
   }
-}
-
-// ── Estilos de severidad ──────────────────────────────────────────────────────
-const SEVERITY_STYLES: Record<Severity, string> = {
-  low:      'bg-blue-500/15   text-blue-400   border-blue-500/30',
-  medium:   'bg-yellow-500/15 text-yellow-400 border-yellow-500/30',
-  high:     'bg-orange-500/15 text-orange-400 border-orange-500/30',
-  critical: 'bg-red-500/15    text-red-400    border-red-500/30',
-}
-
-const SEVERITY_DOT: Record<Severity, string> = {
-  low:      'bg-blue-400',
-  medium:   'bg-yellow-400',
-  high:     'bg-orange-400',
-  critical: 'bg-red-400',
-}
-
-const SEVERITY_LABELS: Record<Severity, string> = {
-  low: 'Bajo', medium: 'Medio', high: 'Alto', critical: 'Crítico',
 }
 
 const LEVEL_LABELS: Record<string, string> = {
@@ -143,38 +124,30 @@ export function VaultPage({ onAskAboutThis }: VaultPageProps): JSX.Element {
     <div className="flex h-full overflow-hidden">
 
       {/* ── Panel izquierdo: lista ── */}
-      <aside className="w-52 shrink-0 flex flex-col border-r border-border">
+      <aside style={{ width: 320, flexShrink: 0, display: 'flex', flexDirection: 'column', borderRight: '1px solid var(--border-1)', background: 'var(--bg-1)', minHeight: 0, overflow: 'hidden' }}>
 
         {/* Cabecera de la lista */}
-        <div className="p-3 border-b border-border space-y-2">
-          <div className="flex items-center gap-2">
-            <BookOpen className="size-4 text-muted-foreground" />
-            <span className="text-sm font-medium">Mi Guía</span>
-            {entries.length > 0 && (
-              <Badge variant="secondary" className="text-xs ml-auto">
-                {entries.length}
-              </Badge>
-            )}
+        <div style={{ padding: '14px 14px 10px', display: 'flex', flexDirection: 'column', gap: 10, borderBottom: '1px solid var(--border-1)', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <BookOpen style={{ width: 16, height: 16, color: 'var(--text-2)' }} />
+            <span style={{ fontSize: 'var(--fs-14)', fontWeight: 600, color: 'var(--text-1)' }}>Mi Guía</span>
+            <span className="chip" style={{ marginLeft: 'auto' }}>{entries.length}</span>
+            <button className="icon-btn" title="Filtrar" style={{ width: 28, height: 28 }}>
+              <Filter style={{ width: 13, height: 13 }} />
+            </button>
           </div>
-          {/* Buscador — flex: icono + input + botón limpiar, sin absolute */}
-          <div className={cn(
-            'flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-input bg-background',
-            'focus-within:ring-1 focus-within:ring-ring'
-          )}>
-            <Search className="size-3.5 text-muted-foreground shrink-0" />
+          <div style={{ position: 'relative' }}>
+            <Search style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', width: 14, height: 14, color: 'var(--text-4)' }} />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Buscar error o lenguaje..."
-              className="flex-1 min-w-0 text-xs bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none"
+              style={{ width: '100%', height: 32, paddingLeft: 32, paddingRight: search ? 32 : 12, background: 'var(--bg-2)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-2)', color: 'var(--text-1)', fontSize: 'var(--fs-12)', outline: 'none' }}
             />
             {search && (
-              <button
-                onClick={() => setSearch('')}
-                className="text-muted-foreground hover:text-foreground shrink-0"
-              >
-                <X className="size-3" />
+              <button onClick={() => setSearch('')} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', padding: 0, display: 'flex' }}>
+                <X style={{ width: 12, height: 12 }} />
               </button>
             )}
           </div>
@@ -204,37 +177,39 @@ export function VaultPage({ onAskAboutThis }: VaultPageProps): JSX.Element {
             </div>
           )}
 
-          {filtered.map((entry) => (
-            <button
-              key={entry.id}
-              onClick={() => handleSelect(entry)}
-              className={cn(
-                'w-full text-left px-3 py-3 border-b border-border transition-colors',
-                'hover:bg-accent/60',
-                selected?.id === entry.id && 'bg-primary/8 border-l-2 border-l-primary'
-              )}
-            >
-              <div className="flex items-start gap-2">
-                {/* Punto de severidad */}
-                <span className={cn(
-                  'size-1.5 rounded-full mt-1.5 shrink-0',
-                  SEVERITY_DOT[entry.severity]
-                )} />
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-foreground truncate">
+          {filtered.map((entry) => {
+            const isActive = selected?.id === entry.id
+            const sevColor = entry.severity === 'critical' || entry.severity === 'high' ? 'var(--err)' : entry.severity === 'medium' ? 'var(--warn)' : 'var(--info)'
+            return (
+              <button
+                key={entry.id}
+                onClick={() => handleSelect(entry)}
+                style={{
+                  display: 'block', width: '100%', textAlign: 'left',
+                  padding: '10px 12px', marginBottom: 2,
+                  background: isActive ? 'var(--accent-soft)' : 'transparent',
+                  border: `1px solid ${isActive ? 'var(--accent-border)' : 'transparent'}`,
+                  borderRadius: 'var(--radius-2)',
+                  cursor: 'pointer',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: sevColor, boxShadow: `0 0 6px ${sevColor}`, flexShrink: 0 }} />
+                  <span style={{ fontSize: 'var(--fs-13)', fontWeight: 500, color: 'var(--text-1)', flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {entry.errorType}
-                  </p>
-                  <div className="flex items-center gap-1 mt-0.5 flex-wrap">
-                    <span className="text-xs text-muted-foreground">{entry.language}</span>
-                    <span className="text-muted-foreground/40 text-xs">·</span>
-                    <span className="text-xs text-muted-foreground">{LEVEL_LABELS[entry.level]}</span>
-                    <span className="text-muted-foreground/40 text-xs">·</span>
-                    <span className="text-xs text-muted-foreground/60">{formatDate(entry.date)}</span>
-                  </div>
+                  </span>
+                  <SeverityBadge severity={entry.severity} dotOnly />
                 </div>
-              </div>
-            </button>
-          ))}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, paddingLeft: 15, fontSize: 'var(--fs-11)', color: 'var(--text-3)' }}>
+                  <span style={{ color: 'var(--text-2)', fontWeight: 500 }}>{entry.language}</span>
+                  <span>·</span>
+                  <span>{LEVEL_LABELS[entry.level]}</span>
+                  <span>·</span>
+                  <span style={{ fontFamily: 'var(--font-mono)' }}>{formatDate(entry.date)}</span>
+                </div>
+              </button>
+            )
+          })}
         </div>
       </aside>
 
@@ -263,86 +238,64 @@ export function VaultPage({ onAskAboutThis }: VaultPageProps): JSX.Element {
           <div className="flex flex-col h-full overflow-hidden">
 
             {/* Cabecera del detalle */}
-            <div className="px-5 pt-4 pb-3 border-b border-border space-y-2 shrink-0">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge className={cn('border', SEVERITY_STYLES[selected.severity])}>
-                    {selected.errorType}
-                  </Badge>
-                  <Badge variant="outline" className="text-xs">{selected.language}</Badge>
-                  <Badge variant="outline" className={cn('text-xs border', SEVERITY_STYLES[selected.severity])}>
-                    {SEVERITY_LABELS[selected.severity]}
-                  </Badge>
-                  <Badge variant="secondary" className="text-xs">
-                    {LEVEL_LABELS[selected.level]}
-                  </Badge>
-                </div>
-                <div className="flex items-center gap-1 shrink-0">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="gap-1.5 text-xs text-primary hover:text-primary hover:bg-primary/10 border border-primary/30"
-                    onClick={() => onAskAboutThis(entryToAnalysisResult(selected))}
-                  >
-                    <MessageSquare className="size-3.5" />
-                    Preguntar
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-7 text-muted-foreground hover:text-red-400"
-                    onClick={handleDelete}
-                    disabled={deleting}
-                    title="Eliminar entrada"
-                  >
-                    {deleting
-                      ? <Loader2 className="size-3.5 animate-spin" />
-                      : <Trash2 className="size-3.5" />
-                    }
-                  </Button>
-                </div>
+            <div style={{ padding: '12px 20px', borderBottom: '1px solid var(--border-1)', flexShrink: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                <Chip tone={selected.severity === 'low' ? 'ok' : selected.severity === 'medium' ? 'warn' : 'err'} lg>
+                  {selected.errorType.length > 36 ? selected.errorType.slice(0, 35) + '…' : selected.errorType}
+                </Chip>
+                <Chip>{selected.language}</Chip>
+                <SeverityBadge severity={selected.severity} />
+                <Chip>{LEVEL_LABELS[selected.level]}</Chip>
+                <div style={{ flex: 1 }} />
+                <button className="btn ghost" style={{ height: 28, fontSize: 'var(--fs-12)', gap: 6 }} onClick={() => onAskAboutThis(entryToAnalysisResult(selected))}>
+                  <MessageSquare style={{ width: 13, height: 13 }} /> Preguntar
+                </button>
+                <button className="icon-btn" style={{ width: 28, height: 28 }} onClick={handleDelete} disabled={deleting} title="Eliminar">
+                  {deleting ? <Loader2 style={{ width: 13, height: 13 }} className="animate-spin" /> : <Trash2 style={{ width: 13, height: 13 }} />}
+                </button>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Guardado {formatDate(selected.date)}
-              </p>
+              <div style={{ fontSize: 'var(--fs-11)', color: 'var(--text-3)', marginTop: 8 }}>
+                Guardado · <span style={{ fontFamily: 'var(--font-mono)' }}>{formatDate(selected.date)}</span>
+              </div>
             </div>
 
             {/* Cuerpo del detalle — scrollable */}
-            <div className="flex-1 overflow-auto px-5 py-5 space-y-4">
+            <div style={{ flex: 1, overflow: 'auto', padding: '16px 20px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
 
               {/* Qué pasó */}
-              <div className="rounded-lg border border-yellow-500/20 bg-yellow-500/[0.03]">
-                <div className="flex items-center gap-2.5 px-4 py-3 border-b border-yellow-500/15 bg-yellow-500/[0.04]">
-                  <AlertTriangle className="size-4 text-yellow-400 shrink-0 animate-pulse" />
-                  <span className="text-sm font-bold uppercase tracking-wider text-yellow-400">Qué pasó</span>
+              <div className="card">
+                <div className="card-head">
+                  <span className="icn icn-anim-pulse" style={{ background: 'var(--warn-soft)', color: 'var(--warn)', border: '1px solid rgba(251,191,36,0.28)' }}>
+                    <AlertTriangle style={{ width: 18, height: 18 }} />
+                  </span>
+                  <h3 style={{ color: 'var(--warn)' }}>Qué pasó</h3>
                 </div>
-                <p className="px-4 py-5 text-base text-foreground leading-relaxed">{selected.explanation}</p>
+                <div className="card-body"><p>{selected.explanation}</p></div>
               </div>
 
               {/* Cómo solucionarlo */}
-              <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/[0.03]">
-                <div className="flex items-center gap-2.5 px-4 py-3 border-b border-emerald-500/15 bg-emerald-500/[0.04]">
-                  <Lightbulb className="size-4 text-emerald-400 shrink-0 animate-pulse" />
-                  <span className="text-sm font-bold uppercase tracking-wider text-emerald-400">Cómo solucionarlo</span>
+              <div className="card">
+                <div className="card-head">
+                  <span className="icn icn-anim-glow" style={{ background: 'var(--ok-soft)', color: 'var(--ok)', border: '1px solid rgba(74,222,128,0.28)' }}>
+                    <Lightbulb style={{ width: 18, height: 18 }} />
+                  </span>
+                  <h3 style={{ color: 'var(--ok)' }}>Cómo solucionarlo</h3>
                 </div>
-                <p className="px-4 py-5 text-base text-foreground leading-relaxed">{selected.solution}</p>
+                <div className="card-body"><p>{selected.solution}</p></div>
               </div>
 
               {/* Términos clave */}
               {selected.terms.length > 0 && (
-                <div className="rounded-lg border border-blue-500/20 bg-blue-500/[0.03]">
-                  <div className="flex items-center gap-2.5 px-4 py-3 border-b border-blue-500/15 bg-blue-500/[0.04]">
-                    <Tag className="size-4 text-blue-400 shrink-0" />
-                    <span className="text-sm font-bold uppercase tracking-wider text-blue-400">Términos clave</span>
+                <div className="card">
+                  <div className="card-head">
+                    <span className="icn icn-anim-bounce" style={{ background: 'var(--info-soft)', color: 'var(--info)', border: '1px solid rgba(96,165,250,0.28)' }}>
+                      <Tag style={{ width: 18, height: 18 }} />
+                    </span>
+                    <h3 style={{ color: 'var(--info)' }}>Términos clave</h3>
                   </div>
-                  <div className="flex flex-wrap gap-2 px-4 py-5">
+                  <div className="card-body" style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                     {selected.terms.map((term) => (
-                      <span
-                        key={term}
-                        className="text-sm px-3 py-1.5 rounded-md bg-sky-500/10 border border-sky-400/30 text-sky-400 font-mono leading-normal cursor-default hover:bg-sky-400/15 hover:text-sky-300 hover:border-sky-300/50 transition-colors"
-                      >
-                        #{term}
-                      </span>
+                      <span key={term} className="chip info mono">#{term}</span>
                     ))}
                   </div>
                 </div>
@@ -350,31 +303,31 @@ export function VaultPage({ onAskAboutThis }: VaultPageProps): JSX.Element {
 
               {/* Corrección sugerida */}
               {selected.correctedCode && (
-                <div className="rounded-lg border border-white/10 bg-white/[0.03]">
-                  <div className="flex items-center gap-2.5 px-4 py-3 border-b border-white/10 bg-white/[0.02]">
-                    <Code2 className="size-4 text-slate-400 shrink-0" />
-                    <span className="text-sm font-bold uppercase tracking-wider text-slate-400">Corrección sugerida</span>
+                <div className="card">
+                  <div className="card-head">
+                    <span className="icn icn-anim-spark" style={{ background: 'var(--purple-soft)', color: 'var(--purple)', border: '1px solid rgba(167,139,250,0.28)' }}>
+                      <Code2 style={{ width: 18, height: 18 }} />
+                    </span>
+                    <h3 style={{ color: 'var(--purple)' }}>Corrección sugerida</h3>
                   </div>
-                  <div className="px-4 py-5">
+                  <div className="card-body">
                     <CodeBlock code={selected.correctedCode} language={selected.language} />
                   </div>
                 </div>
               )}
 
-              {/* Error original — colapsado */}
-              <details className="group rounded-lg border border-white/10 bg-white/[0.03]">
-                <summary className="flex items-center gap-2.5 px-4 py-3 cursor-pointer select-none hover:bg-white/[0.03] transition-colors">
-                  <FileText className="size-4 text-slate-400 shrink-0" />
-                  <span className="text-sm font-bold uppercase tracking-wider text-slate-400 group-hover:text-foreground transition-colors">
-                    Error original
+              {/* Error original */}
+              <div className="card">
+                <div className="card-head">
+                  <span className="icn" style={{ background: 'var(--bg-3)', color: 'var(--text-2)', border: '1px solid var(--border-2)' }}>
+                    <FileText style={{ width: 18, height: 18 }} />
                   </span>
-                </summary>
-                <div className="px-4 pb-4 pt-0">
-                  <pre className="bg-zinc-950 border border-white/8 rounded-md p-3 text-xs font-mono text-muted-foreground overflow-x-auto leading-relaxed whitespace-pre-wrap">
-                    {selected.input}
-                  </pre>
+                  <h3>Error original</h3>
                 </div>
-              </details>
+                <div className="card-body">
+                  <CodeBlock code={selected.input} language="log" />
+                </div>
+              </div>
 
             </div>
           </div>

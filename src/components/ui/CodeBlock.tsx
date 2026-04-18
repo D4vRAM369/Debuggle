@@ -105,26 +105,18 @@ export function CodeBlock({ code, language, className }: CodeBlockProps): JSX.El
   }
 
   return (
-    <div className={cn('overflow-hidden rounded-xl border border-white/7 bg-[rgba(8,10,18,0.92)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]', className)}>
-      <div className="flex items-center justify-between border-b border-white/6 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] px-4 py-2.5">
-        <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-          {language}
-        </span>
-        <button
-          onClick={handleCopy}
-          className="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
-        >
+    <div className={cn('code', className)}>
+      <div className="code-head">
+        <span className="lang">{language}</span>
+        <button className="copy" onClick={handleCopy}>
           {copied
-            ? <><Check className="size-3 text-emerald-500" /> Copiado</>
-            : <><Copy className="size-3" /> Copiar</>
+            ? <><Check style={{ width: 11, height: 11 }} /> Copiado</>
+            : <><Copy style={{ width: 11, height: 11 }} /> Copiar</>
           }
         </button>
       </div>
-      <pre className="m-0 overflow-x-auto bg-[#090b12] p-4">
-        <code
-          ref={codeRef}
-          className="text-xs font-mono leading-relaxed hljs"
-        />
+      <pre>
+        <code ref={codeRef} className="hljs" />
       </pre>
     </div>
   )

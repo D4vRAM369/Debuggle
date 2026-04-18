@@ -12,6 +12,9 @@ dist/
 # Documentación local (PBL, planes, exports — no forman parte del código)
 docs/
 
+# Polish visual con Claude Design, probándolo por primera vez
+Debuggle_polished/
+
 # Carpeta interna de Claude
 .letta/
 .claude/
@@ -22,3 +25,4 @@ vault/
 
 # Companion visual de brainstorming
 .superpowers/
+.omx/

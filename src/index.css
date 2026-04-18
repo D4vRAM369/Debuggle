@@ -1,5 +1,11 @@
+/* Google Fonts — must be first */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
 /* Tailwind CSS v4 */
 @import "tailwindcss";
+
+/* Debuggle design tokens + primitives */
+@import "./styles/tokens.css";
 
 /* ── Fuente Geist (local, sin Google Fonts) ────────────────────────────────── */
 @font-face {

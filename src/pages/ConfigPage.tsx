@@ -123,12 +123,14 @@ export function ConfigPage(): JSX.Element {
                 setActiveProvider(p.id)
                 setActiveModel('')
               }}
-              className={cn(
-                'flex flex-col items-start gap-1 p-3 rounded-md border text-left transition-colors',
-                activeProvider === p.id
-                  ? 'border-primary/50 bg-primary/5'
-                  : 'border-border hover:border-border/80 hover:bg-accent/50'
-              )}
+              style={{
+                textAlign: 'left', padding: '12px 14px', cursor: 'pointer',
+                display: 'flex', flexDirection: 'column', gap: 4,
+                background: activeProvider === p.id ? 'var(--accent-soft)' : 'var(--bg-2)',
+                border: `1px solid ${activeProvider === p.id ? 'var(--accent-border)' : 'var(--border-1)'}`,
+                borderRadius: 'var(--radius-2)',
+                color: 'var(--text-1)',
+              }}
             >
               <div className="flex items-center justify-between w-full">
                 <span className="text-sm font-medium text-foreground">{p.name}</span>

@@ -9,8 +9,6 @@
  */
 import { useEffect, useState } from 'react'
 import { BarChart2, RefreshCw, AlertTriangle, Code2, Hash, Layers } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { computeStats } from '@/lib/stats'
 import type { VaultMeta } from '@/types/api'
@@ -21,74 +19,73 @@ function StatCard({
   icon: Icon,
   label,
   value,
-  accent = 'text-slate-100',
+  sub,
+  color,
 }: {
   icon: React.ElementType
   label: string
   value: string | number | null
-  accent?: string
+  sub?: string
+  color?: string
 }) {
   return (
-    <div className="rounded-lg border border-slate-700 bg-slate-900 p-4 flex items-start gap-3">
-      <div className="mt-0.5 text-slate-500">
-        <Icon size={16} />
+    <div style={{ background: 'var(--bg-2)', border: '1px solid var(--border-1)', borderRadius: 'var(--radius-3)', padding: '14px 16px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+        <Icon size={14} style={{ color: 'var(--text-3)' }} />
+        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--text-3)' }}>{label}</span>
       </div>
-      <div className="min-w-0">
-        <p className="text-[11px] text-slate-500 uppercase tracking-wider mb-1">{label}</p>
-        <p className={cn('text-lg font-bold truncate', accent)}>{value ?? '—'}</p>
+      <div style={{ fontSize: 'var(--fs-22)', fontWeight: 600, color: color ?? 'var(--text-1)', letterSpacing: '-0.015em', lineHeight: 1.1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        {value ?? '—'}
       </div>
+      {sub && <div style={{ fontSize: 'var(--fs-12)', color: 'var(--text-3)', marginTop: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub}</div>}
     </div>
   )
 }
 
-type PillColors = { dot: string; bg: string; border: string; bar: string; badge: string; badgeText: string }
-
-const ERROR_PALETTE: PillColors[] = [
-  { dot: '#ef4444', bg: 'rgba(239,68,68,.04)',  border: 'rgba(239,68,68,.18)',  bar: '#ef4444', badge: 'rgba(239,68,68,.15)',  badgeText: '#ef4444' },
-  { dot: '#f97316', bg: 'rgba(249,115,22,.04)', border: 'rgba(249,115,22,.18)', bar: '#f97316', badge: 'rgba(249,115,22,.15)', badgeText: '#f97316' },
-]
-const LANG_PALETTE: PillColors[] = [
-  { dot: '#f59e0b', bg: 'rgba(245,158,11,.04)', border: 'rgba(245,158,11,.18)', bar: '#f59e0b', badge: 'rgba(245,158,11,.15)', badgeText: '#f59e0b' },
-  { dot: '#3b82f6', bg: 'rgba(59,130,246,.04)', border: 'rgba(59,130,246,.18)', bar: '#3b82f6', badge: 'rgba(59,130,246,.15)', badgeText: '#3b82f6' },
-]
-const MUTED_COLOR: PillColors = { dot: '#6b7280', bg: 'rgba(107,114,128,.03)', border: 'rgba(107,114,128,.12)', bar: '#6b7280', badge: 'rgba(107,114,128,.12)', badgeText: '#9ca3af' }
+const ERR_COLORS  = ['var(--err)', 'var(--warn)', 'var(--info)', 'var(--info)', 'var(--info)']
+const LANG_COLORS = ['var(--warn)', 'var(--info)', '#a78bfa', 'var(--info)', 'var(--info)']
 
 function FreqBar({
   label,
   count,
   max,
-  rank = 0,
-  palette = ERROR_PALETTE,
+  color,
+  bold = false,
 }: {
-  label:    string
-  count:    number
-  max:      number
-  rank?:    number
-  palette?: PillColors[]
+  label:  string
+  count:  number
+  max:    number
+  color:  string
+  bold?:  boolean
 }) {
-  const pct = max > 0 ? Math.round((count / max) * 100) : 0
-  const c   = palette[rank] ?? MUTED_COLOR
-
+  const pct = Math.max(6, (count / max) * 100)
   return (
-    <div
-      className="flex items-center justify-between gap-3 px-3 py-2 rounded-md"
-      style={{ background: c.bg, border: `1px solid ${c.border}` }}
-    >
-      <div className="flex items-center gap-2.5 min-w-0">
-        <span className="size-1.5 rounded-full shrink-0" style={{ background: c.dot }} />
-        <span className="text-[11px] text-slate-200 truncate">{label}</span>
-      </div>
-      <div className="flex items-center gap-2 shrink-0">
-        <div className="w-12 h-[3px] rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,.06)' }}>
-          <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: c.bar }} />
-        </div>
-        <span
-          className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full tabular-nums"
-          style={{ background: c.badge, color: c.badgeText }}
-        >
-          ×{count}
-        </span>
-      </div>
+    <div style={{
+      display: 'grid', gridTemplateColumns: '1fr 120px 40px',
+      alignItems: 'center', gap: 14,
+      padding: '10px 14px',
+      borderTop: '1px solid var(--border-1)',
+    }}>
+      <span style={{
+        display: 'flex', alignItems: 'center', gap: 8,
+        fontSize: 'var(--fs-13)', color: 'var(--text-1)',
+        fontWeight: bold ? 500 : 400,
+        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+      }}>
+        <span style={{ width: 6, height: 6, borderRadius: '50%', background: color, flexShrink: 0 }} />
+        {label}
+      </span>
+      <span style={{
+        height: 6, borderRadius: 999, background: 'var(--bg-3)',
+        overflow: 'hidden', position: 'relative',
+      }}>
+        <span style={{
+          position: 'absolute', left: 0, top: 0, bottom: 0,
+          width: `${pct}%`, background: color,
+          boxShadow: `0 0 12px ${color}40`,
+        }} />
+      </span>
+      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--fs-12)', color, fontWeight: 600, textAlign: 'right' }}>×{count}</span>
     </div>
   )
 }
@@ -160,34 +157,36 @@ export function PatternsPage(): JSX.Element {
   }
 
   return (
-    <div className="h-full overflow-y-auto">
-    <div className="max-w-2xl mx-auto flex flex-col gap-6 p-5">
+    <div style={{ height: '100%', overflowY: 'auto' }}>
+    <div style={{ flex: 1, overflow: 'auto', padding: 24, display: 'flex', flexDirection: 'column', gap: 20 }}>
 
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-base font-semibold text-slate-200">Tus patrones de error</h2>
-        <Button variant="ghost" size="sm" onClick={load} disabled={loading} className="text-slate-500 hover:text-slate-300">
-          <RefreshCw size={14} className={cn(loading && 'animate-spin')} />
-        </Button>
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 14 }}>
+        <div>
+          <h1 style={{ margin: 0, fontSize: 'var(--fs-22)', fontWeight: 600, letterSpacing: '-0.015em', color: 'var(--text-1)' }}>Patrones</h1>
+          <p style={{ margin: '4px 0 0', fontSize: 'var(--fs-13)', color: 'var(--text-3)' }}>Resumen de tus errores analizados</p>
+        </div>
+        <div style={{ flex: 1 }} />
+        <button className="icon-btn" onClick={load} disabled={loading} title="Recargar">
+          <RefreshCw size={14} className={cn(loading && 'animate-spin')} style={{ color: 'var(--text-3)' }} />
+        </button>
       </div>
 
-      {/* Tarjetas resumen */}
-      <div className="grid grid-cols-2 gap-3">
+      {/* Tarjetas resumen — 4 columnas */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
         <StatCard icon={Hash}          label="Total entradas"          value={stats.totalEntries} />
         <StatCard icon={Layers}        label="Tipos únicos"            value={stats.uniqueErrors} />
-        <StatCard icon={AlertTriangle} label="Error más frecuente"     value={stats.topError}     accent="text-red-400" />
-        <StatCard icon={Code2}         label="Lenguaje con más fallos" value={stats.topLanguage}  accent="text-amber-400" />
+        <StatCard icon={AlertTriangle} label="Error más frecuente"     value={stats.topError}     color="var(--err)" />
+        <StatCard icon={Code2}         label="Lenguaje con más fallos" value={stats.topLanguage}  color="var(--warn)" />
       </div>
 
       {/* Frecuencia de errores */}
       {topErrors.length > 0 && (
-        <section className="flex flex-col gap-3">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-            Errores más frecuentes
-          </h3>
-          <div className="flex flex-col gap-2">
+        <section style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div className="eyebrow">Errores más frecuentes</div>
+          <div style={{ background: 'var(--bg-2)', border: '1px solid var(--border-1)', borderRadius: 'var(--radius-3)', overflow: 'hidden' }}>
             {topErrors.map(([type, count], i) => (
-              <FreqBar key={type} label={type} count={count} max={maxError} rank={i} palette={ERROR_PALETTE} />
+              <FreqBar key={type} label={type} count={count} max={maxError} color={ERR_COLORS[i] ?? 'var(--info)'} />
             ))}
           </div>
         </section>
@@ -195,13 +194,11 @@ export function PatternsPage(): JSX.Element {
 
       {/* Frecuencia de lenguajes */}
       {topLangs.length > 0 && (
-        <section className="flex flex-col gap-3">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-            Lenguajes
-          </h3>
-          <div className="flex flex-col gap-2">
+        <section style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div className="eyebrow">Lenguajes</div>
+          <div style={{ background: 'var(--bg-2)', border: '1px solid var(--border-1)', borderRadius: 'var(--radius-3)', overflow: 'hidden' }}>
             {topLangs.map(([lang, count], i) => (
-              <FreqBar key={lang} label={lang} count={count} max={maxLang} rank={i} palette={LANG_PALETTE} />
+              <FreqBar key={lang} label={lang} count={count} max={maxLang} color={LANG_COLORS[i] ?? 'var(--info)'} bold />
             ))}
           </div>
         </section>
@@ -209,37 +206,21 @@ export function PatternsPage(): JSX.Element {
 
       {/* Errores repetidos */}
       {repeatedList.length > 0 && (
-        <section className="flex flex-col gap-3">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-            Errores recurrentes
-          </h3>
-          <div className="flex flex-col gap-2">
-            {repeatedList.map((item) => {
-              const c = item.count >= 4 ? ERROR_PALETTE[0] : item.count >= 2 ? ERROR_PALETTE[1] : MUTED_COLOR
+        <section style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div className="eyebrow">Errores recurrentes</div>
+          <div style={{ background: 'var(--bg-2)', border: '1px solid var(--border-1)', borderRadius: 'var(--radius-3)', overflow: 'hidden' }}>
+            {repeatedList.map((item, i) => {
+              const c = item.count >= 4 ? 'var(--err)' : item.count >= 2 ? 'var(--warn)' : 'var(--info)'
               return (
-                <div
-                  key={`${item.errorType}::${item.language}`}
-                  className="flex items-center justify-between gap-3 px-3 py-2 rounded-md"
-                  style={{ background: c.bg, border: `1px solid ${c.border}` }}
-                >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <span className="size-1.5 rounded-full shrink-0" style={{ background: c.dot }} />
-                    <span className="text-[11px] text-slate-200 truncate">{item.errorType}</span>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span
-                      className="text-[10px] font-medium px-2 py-1 rounded-full leading-none"
-                      style={{ background: 'rgba(255,255,255,.06)', color: '#94a3b8' }}
-                    >
-                      {item.language}
-                    </span>
-                    <span
-                      className="text-[10px] font-semibold px-1.5 py-1 rounded-full leading-none tabular-nums"
-                      style={{ background: c.badge, color: c.badgeText }}
-                    >
-                      ×{item.count}
-                    </span>
-                  </div>
+                <div key={`${item.errorType}::${item.language}`} style={{
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '10px 12px',
+                  borderTop: i === 0 ? 'none' : '1px solid var(--border-1)',
+                }}>
+                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: c, flexShrink: 0 }} />
+                  <span style={{ fontSize: 'var(--fs-13)', color: 'var(--text-1)', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.errorType}</span>
+                  <span className="chip">{item.language}</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--fs-12)', color: c, fontWeight: 600, flexShrink: 0 }}>×{item.count}</span>
                 </div>
               )
             })}

@@ -69,30 +69,33 @@ interface MessageBubbleProps {
 function MessageBubble({ msg }: MessageBubbleProps): JSX.Element {
   const isUser = msg.role === 'user'
   return (
-    <div className={cn(
-      'flex gap-2.5 max-w-[88%]',
-      isUser ? 'ml-auto flex-row-reverse' : 'mr-auto'
-    )}>
+    <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', flexDirection: isUser ? 'row-reverse' : 'row' }}>
       {/* Avatar */}
-      <div className={cn(
-        'size-7 rounded-full flex items-center justify-center shrink-0 mt-0.5',
-        isUser
-          ? 'bg-primary/20'
-          : 'bg-muted border border-border'
-      )}>
+      <span style={{
+        width: 26, height: 26, borderRadius: 7, flexShrink: 0,
+        background: isUser ? 'var(--bg-3)' : 'var(--accent-soft)',
+        color: isUser ? 'var(--text-2)' : 'var(--accent)',
+        border: `1px solid ${isUser ? 'var(--border-2)' : 'var(--accent-border)'}`,
+        display: 'grid', placeItems: 'center',
+      }}>
         {isUser
-          ? <User className="size-3.5 text-primary" />
-          : <Bot  className="size-3.5 text-muted-foreground" />
+          ? <User style={{ width: 12, height: 12 }} />
+          : <Bot  style={{ width: 12, height: 12 }} />
         }
-      </div>
-
+      </span>
       {/* Burbuja */}
-      <div className={cn(
-        'rounded-xl px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap break-words',
-        isUser
-          ? 'bg-primary text-primary-foreground rounded-tr-sm'
-          : 'bg-muted text-foreground rounded-tl-sm border border-border'
-      )}>
+      <div style={{
+        maxWidth: '78%',
+        background: isUser ? 'var(--accent-soft)' : 'var(--bg-2)',
+        border: `1px solid ${isUser ? 'var(--accent-border)' : 'var(--border-1)'}`,
+        borderRadius: 12,
+        padding: '10px 14px',
+        color: 'var(--text-1)',
+        fontSize: 'var(--fs-13)',
+        lineHeight: 1.6,
+        whiteSpace: 'pre-wrap',
+        wordBreak: 'break-words',
+      }}>
         {msg.content}
       </div>
     </div>
@@ -103,14 +106,25 @@ function MessageBubble({ msg }: MessageBubbleProps): JSX.Element {
 
 function TypingIndicator(): JSX.Element {
   return (
-    <div className="flex gap-2.5 mr-auto">
-      <div className="size-7 rounded-full flex items-center justify-center bg-muted border border-border shrink-0 mt-0.5">
-        <Bot className="size-3.5 text-muted-foreground" />
-      </div>
-      <div className="bg-muted border border-border rounded-xl rounded-tl-sm px-4 py-3 flex items-center gap-1.5">
-        <span className="size-1.5 rounded-full bg-muted-foreground/50 animate-bounce [animation-delay:0ms]" />
-        <span className="size-1.5 rounded-full bg-muted-foreground/50 animate-bounce [animation-delay:150ms]" />
-        <span className="size-1.5 rounded-full bg-muted-foreground/50 animate-bounce [animation-delay:300ms]" />
+    <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+      <span style={{
+        width: 26, height: 26, borderRadius: 7, flexShrink: 0,
+        background: 'var(--accent-soft)', color: 'var(--accent)',
+        border: '1px solid var(--accent-border)',
+        display: 'grid', placeItems: 'center',
+      }}>
+        <Bot style={{ width: 12, height: 12 }} />
+      </span>
+      <div style={{
+        background: 'var(--bg-2)', border: '1px solid var(--border-1)',
+        borderRadius: 12, padding: '10px 14px',
+        display: 'flex', alignItems: 'center', gap: 6,
+        fontSize: 'var(--fs-12)', color: 'var(--text-3)',
+      }}>
+        <span className="animate-bounce [animation-delay:0ms]" style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--text-4)', display: 'inline-block' }} />
+        <span className="animate-bounce [animation-delay:150ms]" style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--text-4)', display: 'inline-block' }} />
+        <span className="animate-bounce [animation-delay:300ms]" style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--text-4)', display: 'inline-block' }} />
+        <span style={{ marginLeft: 4 }}>Escribiendo…</span>
       </div>
     </div>
   )
@@ -267,40 +281,38 @@ export function ChatPage({ context, onClearContext }: ChatPageProps): JSX.Elemen
       </div>
 
       {/* ── Área de input ── */}
-      <div className="border-t border-border p-3 flex gap-2 items-end bg-background">
-        <Textarea
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={
-            context
-              ? `¿Qué más quieres saber sobre ${context.errorType}?`
-              : 'Escribe tu pregunta... (Enter para enviar)'
-          }
-          className="min-h-[44px] max-h-[120px] resize-none text-sm"
-          rows={1}
-          disabled={isSending}
-        />
-        <Button
-          onClick={handleSend}
-          disabled={!input.trim() || isSending}
-          size="icon"
-          className="shrink-0 h-[44px] w-[44px]"
-        >
-          {isSending
-            ? <Loader2 className="size-4 animate-spin" />
-            : <Send className="size-4" />
-          }
-        </Button>
-      </div>
-
-      {/* ── Pie: hint + proveedor ── */}
-      <div className="px-4 pb-2.5 flex items-center justify-between text-xs text-muted-foreground/50">
-        <span>Enter para enviar · Shift+Enter nueva línea</span>
-        <span className="flex items-center gap-1">
-          <Cpu className="size-3" />
-          {providerName}
-        </span>
+      <div style={{ borderTop: '1px solid var(--border-1)', background: 'var(--bg-1)', padding: '14px 24px 16px' }}>
+        <div style={{ maxWidth: 760, margin: '0 auto' }}>
+          <div style={{
+            display: 'flex', alignItems: 'flex-end', gap: 8,
+            background: 'var(--bg-2)', border: '1px solid var(--border-2)',
+            borderRadius: 12, padding: 8,
+          }}>
+            <Textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={context ? `¿Qué más quieres saber sobre ${context.errorType}?` : 'Escribe tu pregunta... (Enter para enviar)'}
+              rows={1}
+              disabled={isSending}
+              style={{ border: 'none', background: 'transparent', flex: 1, minHeight: 44, resize: 'none', fontSize: 'var(--fs-13)', color: 'var(--text-1)', outline: 'none' }}
+            />
+            <button
+              onClick={handleSend}
+              disabled={!input.trim() || isSending}
+              className="btn primary"
+              style={{ width: 38, height: 38, padding: 0, justifyContent: 'center', flexShrink: 0 }}
+            >
+              {isSending ? <Loader2 style={{ width: 14, height: 14 }} className="animate-spin" /> : <Send style={{ width: 14, height: 14 }} />}
+            </button>
+          </div>
+          <div style={{ marginTop: 6, fontSize: 'var(--fs-11)', color: 'var(--text-4)', display: 'flex', justifyContent: 'space-between', padding: '0 4px' }}>
+            <span>Enter para enviar · Shift+Enter nueva línea</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+              <Cpu style={{ width: 10, height: 10 }} /> {providerName}
+            </span>
+          </div>
+        </div>
       </div>
 
     </div>
