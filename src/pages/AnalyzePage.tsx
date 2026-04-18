@@ -258,6 +258,7 @@ export function AnalyzePage({ onAskAboutThis, onAnalysisDone }: AnalyzePageProps
   }
 
   const chipTone = result ? (result.severity === 'low' ? 'ok' : result.severity === 'medium' ? 'warn' : 'err') : ''
+  const contextChip = input.trim().length === 0 ? null : (detectedLang ?? 'entrada')
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
@@ -268,7 +269,7 @@ export function AnalyzePage({ onAskAboutThis, onAnalysisDone }: AnalyzePageProps
         {/* Header: título + contexto detectado + acciones */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
           <h1 style={{ margin: 0, fontSize: 'var(--fs-18)', fontWeight: 600, letterSpacing: '-0.01em', color: 'var(--text-1)' }}>Analizar</h1>
-          {detectedLang && <Chip tone="info" mono>{detectedLang}</Chip>}
+          {contextChip && <Chip tone="info" mono>{contextChip}</Chip>}
           <div style={{ flex: 1 }} />
           <button className="btn ghost" onClick={handlePasteExample} style={{ height: 30 }}>
             <FileText style={{ width: 13, height: 13 }} /> Pegar ejemplo
@@ -343,7 +344,7 @@ export function AnalyzePage({ onAskAboutThis, onAnalysisDone }: AnalyzePageProps
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             minHeight: 200,
           }}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, color: 'var(--text-3)' }}>
+            <div className="empty-state" style={{ gap: 10, padding: 24 }}>
               <div style={{
                 width: 56, height: 56, borderRadius: 14,
                 background: 'var(--bg-2)', border: '1px solid var(--border-1)',
@@ -351,8 +352,8 @@ export function AnalyzePage({ onAskAboutThis, onAnalysisDone }: AnalyzePageProps
               }}>
                 <Sparkles style={{ width: 22, height: 22, color: 'var(--text-3)' }} />
               </div>
-              <h4 style={{ margin: 0, fontSize: 'var(--fs-14)', fontWeight: 500, color: 'var(--text-2)' }}>El análisis aparecerá aquí</h4>
-              <p style={{ margin: 0, fontSize: 'var(--fs-12)', color: 'var(--text-4)' }}>Pega un error y pulsa Analizar</p>
+              <h4 style={{ margin: 0 }}>El análisis aparecerá aquí</h4>
+              <p style={{ margin: 0 }}>Pega un error y Debuggle lo desglosa en partes legibles.</p>
             </div>
           </div>
         )}
