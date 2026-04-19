@@ -185,5 +185,6 @@
       "releaseType": "release"
     }
   },
-  "packageManager": "pnpm@10.33.0"
+  "packageManager": "pnpm@10.33.0",
+  "license": "BUSL-1.1"
 }
