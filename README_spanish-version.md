@@ -1,6 +1,6 @@
 # 🐛 Debuggle
 
-> Tu asistente personal de debugging. Pega un error, entiéndelo a tu nivel, guárdalo, y no vuelvas a repetirlo.
+> Tu asistente personal de debugging. Pega un error, entiéndelo a tu nivel, guárdalo, y no vuelvas a repetirlo _—o, si lo haces, al menos sabrás exactamente qué está pasando._ Al fin y al cabo, así es como se aprende a programar: a través de los errores y la iteración.
 
 ![Banner de Debuggle](assets/branding/debuggle-readme-banner-1600x500.png)
 
