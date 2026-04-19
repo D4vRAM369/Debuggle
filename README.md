@@ -11,6 +11,8 @@
 [![Electron](https://img.shields.io/badge/Electron-33-47848F?logo=electron)](https://electronjs.org)
 [![React](https://img.shields.io/badge/React-18-61DAFB?logo=react)](https://react.dev)
 
+[🇪🇸🇮🇨 Versión en español](README_spanish-version.md)
+
 ---
 
 ## What is Debuggle?
