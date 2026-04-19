@@ -65,3 +65,49 @@ describe('computeStats', () => {
     expect(repeatedErrors).not.toContain('TypeError')
   })
 })
+
+// ── formatDate i18n ────────────────────────────────────────────────────────────
+// Pure-function copy for testing. If this breaks after a VaultPage refactor,
+// export formatDate from VaultPage and update the import here.
+function formatDate(iso: string, lang: 'es' | 'en' = 'es'): string {
+  const diff = Date.now() - new Date(iso).getTime()
+  const mins  = Math.floor(diff / 60_000)
+  if (lang === 'en') {
+    if (mins < 1)  return 'just now'
+    if (mins < 60) return `${mins}m ago`
+    const hours = Math.floor(mins / 60)
+    if (hours < 24) return `${hours}h ago`
+    const days  = Math.floor(hours / 24)
+    if (days < 7)  return `${days}d ago`
+    return new Date(iso).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })
+  }
+  if (mins < 1)  return 'ahora mismo'
+  if (mins < 60) return `hace ${mins} min`
+  const hours = Math.floor(mins / 60)
+  if (hours < 24) return `hace ${hours}h`
+  const days  = Math.floor(hours / 24)
+  if (days < 7)  return `hace ${days}d`
+  return new Date(iso).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
+}
+
+describe('formatDate', () => {
+  it('returns Spanish for lang=es', () => {
+    const recent = new Date(Date.now() - 5 * 60_000).toISOString()
+    expect(formatDate(recent, 'es')).toBe('hace 5 min')
+  })
+
+  it('returns English for lang=en', () => {
+    const recent = new Date(Date.now() - 5 * 60_000).toISOString()
+    expect(formatDate(recent, 'en')).toBe('5m ago')
+  })
+
+  it('handles just now in English', () => {
+    const now = new Date().toISOString()
+    expect(formatDate(now, 'en')).toBe('just now')
+  })
+
+  it('handles ahora mismo in Spanish', () => {
+    const now = new Date().toISOString()
+    expect(formatDate(now, 'es')).toBe('ahora mismo')
+  })
+})

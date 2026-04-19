@@ -10,7 +10,7 @@
 import { useState, useEffect } from 'react'
 import {
   BookOpen, Search, Trash2, MessageSquare,
-  Loader2, X, AlertTriangle, Lightbulb, Tag, Code2, FileText, Filter
+  Loader2, X, AlertTriangle, Lightbulb, Tag, Code2, FileText
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { VaultMeta, VaultEntry } from '@/types/api'
@@ -22,10 +22,18 @@ import type { UILang } from '@/App'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-/** Formatea una fecha ISO como tiempo relativo en español */
-function formatDate(iso: string): string {
+function formatDate(iso: string, lang: 'es' | 'en' = 'es'): string {
   const diff = Date.now() - new Date(iso).getTime()
   const mins  = Math.floor(diff / 60_000)
+  if (lang === 'en') {
+    if (mins < 1)  return 'just now'
+    if (mins < 60) return `${mins}m ago`
+    const hours = Math.floor(mins / 60)
+    if (hours < 24) return `${hours}h ago`
+    const days  = Math.floor(hours / 24)
+    if (days < 7)  return `${days}d ago`
+    return new Date(iso).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })
+  }
   if (mins < 1)  return 'ahora mismo'
   if (mins < 60) return `hace ${mins} min`
   const hours = Math.floor(mins / 60)
@@ -134,9 +142,6 @@ export function VaultPage({ lang, onAskAboutThis }: VaultPageProps): JSX.Element
             <BookOpen style={{ width: 16, height: 16, color: 'var(--text-2)' }} />
             <span style={{ fontSize: 'var(--fs-14)', fontWeight: 600, color: 'var(--text-1)' }}>{lang === 'en' ? 'My Vault' : 'Mi Guía'}</span>
             <span className="chip" style={{ marginLeft: 'auto' }}>{entries.length}</span>
-            <button className="icon-btn" title="Filtrar" style={{ width: 28, height: 28 }}>
-              <Filter style={{ width: 13, height: 13 }} />
-            </button>
           </div>
           <div style={{ position: 'relative' }}>
             <Search style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', width: 14, height: 14, color: 'var(--text-4)' }} />
@@ -207,7 +212,7 @@ export function VaultPage({ lang, onAskAboutThis }: VaultPageProps): JSX.Element
                   <span>·</span>
                   <span>{LEVEL_LABELS[entry.level]}</span>
                   <span>·</span>
-                  <span style={{ fontFamily: 'var(--font-mono)' }}>{formatDate(entry.date)}</span>
+                  <span style={{ fontFamily: 'var(--font-mono)' }}>{formatDate(entry.date, lang)}</span>
                 </div>
               </button>
             )
@@ -257,7 +262,7 @@ export function VaultPage({ lang, onAskAboutThis }: VaultPageProps): JSX.Element
                 </button>
               </div>
               <div style={{ fontSize: 'var(--fs-11)', color: 'var(--text-3)', marginTop: 8 }}>
-                {lang === 'en' ? 'Saved' : 'Guardado'} · <span style={{ fontFamily: 'var(--font-mono)' }}>{formatDate(selected.date)}</span>
+                {lang === 'en' ? 'Saved' : 'Guardado'} · <span style={{ fontFamily: 'var(--font-mono)' }}>{formatDate(selected.date, lang)}</span>
               </div>
             </div>
 
