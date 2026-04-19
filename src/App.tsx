@@ -91,7 +91,12 @@ function App(): JSX.Element {
 
   useEffect(() => {
     const raw = localStorage.getItem('debuggle.ui')
-    if (!raw) return
+    if (!raw) {
+      // First run: detect OS language. Spanish if locale starts with 'es', English otherwise.
+      const detectedLang: UILang = (navigator.language ?? 'en').startsWith('es') ? 'es' : 'en'
+      setUi((prev) => ({ ...prev, lang: detectedLang }))
+      return
+    }
     try {
       const parsed = JSON.parse(raw) as Partial<UIPrefs>
       setUi({
@@ -104,6 +109,22 @@ function App(): JSX.Element {
       // ignore broken persisted prefs
     }
   }, [])
+
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent): void {
+      if (!e.metaKey && !e.ctrlKey) return
+      if (showOnboarding) return
+      switch (e.key) {
+        case '1': e.preventDefault(); setActiveTab('analyze');  break
+        case '2': e.preventDefault(); setActiveTab('chat');     break
+        case '3': e.preventDefault(); setActiveTab('vault');    break
+        case '4': e.preventDefault(); setActiveTab('patterns'); break
+        case ',': e.preventDefault(); setActiveTab('config');   break
+      }
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [showOnboarding])
 
   useEffect(() => {
     const raw = localStorage.getItem(ONBOARDING_KEY)
