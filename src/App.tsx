@@ -129,13 +129,15 @@ function App(): JSX.Element {
   useEffect(() => {
     const raw = localStorage.getItem(ONBOARDING_KEY)
     if (!raw) {
+      // Mark seen immediately — closing app mid-onboarding won't re-show it
+      localStorage.setItem(ONBOARDING_KEY, JSON.stringify({ seen: true, completed: false, skipped: false, completedAt: null }))
       setShowOnboarding(true)
       setOnboardingReady(true)
       return
     }
     try {
-      const parsed = JSON.parse(raw) as { completed?: boolean }
-      setShowOnboarding(!parsed.completed)
+      const parsed = JSON.parse(raw) as { completed?: boolean; seen?: boolean }
+      setShowOnboarding(!parsed.completed && !parsed.seen)
     } catch {
       setShowOnboarding(true)
     } finally {
