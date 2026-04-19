@@ -1,11 +1,13 @@
 # 🐛 Debuggle
 
-> Your personal debugging assistant. Paste an error, understand it at your level, save it, and never repeat it.
+>Your personal debugging assistant. Paste an error, understand it at your level, save it, and never repeat it —_or if you do, at least you’ll know exactly what’s going on_. In the end, that’s how you learn programming: through errors and iteration.
 
 ![Debuggle Banner](assets/branding/debuggle-readme-banner-1600x500.png)
 
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![PBL](https://img.shields.io/badge/Methodology-PBL-0A7EA4)](#)
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-orange?logo=anthropic)](https://claude.ai/claude-code)
+[![Codex](https://img.shields.io/badge/Assistant-Codex-111827)](https://openai.com/)
 [![Electron](https://img.shields.io/badge/Electron-33-47848F?logo=electron)](https://electronjs.org)
 [![React](https://img.shields.io/badge/React-18-61DAFB?logo=react)](https://react.dev)
 
@@ -181,4 +183,4 @@ See [LICENSE](LICENSE) for the full text.
 
 ## Acknowledgements
 
-Built with [Claude Code](https://claude.ai/claude-code) by Anthropic and GPT-5.3-Codex.
+Built with Claude Code and GPT-5.3-Codex.
