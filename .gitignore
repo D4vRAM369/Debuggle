@@ -15,6 +15,9 @@ docs/
 # Polish visual con Claude Design, probándolo por primera vez
 Debuggle_polished/
 
+# Git worktrees
+.worktrees/
+
 # Carpeta interna de Claude
 .letta/
 .claude/
