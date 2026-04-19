@@ -5,7 +5,9 @@
 ![Banner de Debuggle](assets/branding/debuggle-readme-banner-1600x500.png)
 
 [![Licencia: BUSL-1.1](https://img.shields.io/badge/Licencia-BUSL%201.1-orange.svg)](https://github.com/D4vRAM369/Debuggle/blob/main/LICENSE)
+[![PBL](https://img.shields.io/badge/Methodology-PBL-0A7EA4)](#)
 [![Construido con Claude Code](https://img.shields.io/badge/Construido%20con-Claude%20Code-orange?logo=anthropic)](https://claude.ai/claude-code)
+[![Codex](https://img.shields.io/badge/Assistant-Codex-111827)](https://openai.com/)
 [![Electron](https://img.shields.io/badge/Electron-33-47848F?logo=electron)](https://electronjs.org)
 [![React](https://img.shields.io/badge/React-18-61DAFB?logo=react)](https://react.dev)
 
@@ -180,4 +182,4 @@ Consulta [LICENSE](LICENSE) para el texto completo.
 
 ## Agradecimientos
 
-Construido con [Claude Code](https://claude.ai/claude-code) de Anthropic y GPT-5.3-Codex.
+Construido con Claude Code y GPT-5.3-Codex.
