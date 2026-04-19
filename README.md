@@ -4,7 +4,7 @@
 
 ![Debuggle Banner](assets/branding/debuggle-readme-banner-1600x500.png)
 
-[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![License: BUSL-1.1](https://img.shields.io/badge/License-BUSL%201.1-orange.svg)](https://github.com/D4vRAM369/Debuggle/blob/main/LICENSE)
 [![PBL](https://img.shields.io/badge/Methodology-PBL-0A7EA4)](#)
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-orange?logo=anthropic)](https://claude.ai/claude-code)
 [![Codex](https://img.shields.io/badge/Assistant-Codex-111827)](https://openai.com/)
@@ -171,11 +171,10 @@ For bugs: include the error type, your OS, and steps to reproduce.
 
 ## License
 
-Debuggle is open source under the **GNU Affero General Public License v3.0 (AGPL-3.0)**.
+Debuggle is released under the **Business Source License 1.1 (BUSL-1.1)**. Free for personal and non-commercial use. Commercial use requires a separate license.
 
-You are free to use, modify, and distribute this software under the terms of the AGPL-3.0. If you run a modified version as a network service, you must make your source code available.
 
-For **commercial licensing** (if you want to use Debuggle in a proprietary product or service without the AGPL obligations), open an issue on GitHub.
+For **commercial licensing**, contact: d4vram369@proton.me
 
 See [LICENSE](LICENSE) for the full text.
 
