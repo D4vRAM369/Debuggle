@@ -27,34 +27,38 @@ Debuggle is a desktop app for developers who want to **understand** their errors
 
 <table align="center">
   <tr>
-    <td align="center" width="50%">
+    <td align="center" width="33%">
       <img src="screenshots/dashboard.png" alt="Analyze" /><br/>
       <b>Analyze</b><br/>
       <sub>Paste any error and break it down at 3 levels simultaneously</sub>
     </td>
-    <td align="center" width="50%">
+    <td align="center" width="33%">
+      <img src="screenshots/chat.png" alt="Chat" /><br/>
+      <b>Chat</b><br/>
+      <sub>Conversation interface to interact with the AI</sub>
+    </td>
+    <td align="center" width="33%">
       <img src="screenshots/vault.png" alt="Vault" /><br/>
       <b>Vault</b><br/>
       <sub>Every debugged error saved locally with language and level</sub>
     </td>
   </tr>
+
   <tr>
-    <td align="center" width="50%">
+    <td align="center" width="33%">
       <img src="screenshots/vault-example.png" alt="Vault detail" /><br/>
-      <b>Vault detail</b><br/>
+      <b>Vault Detail</b><br/>
       <sub>Full analysis with fix suggestion and original error log</sub>
     </td>
-    <td align="center" width="50%">
+    <td align="center" width="33%">
       <img src="screenshots/patterns.png" alt="Patterns" /><br/>
       <b>Patterns</b><br/>
       <sub>Identify your most frequent errors and languages over time</sub>
     </td>
-  </tr>
-  <tr>
-    <td align="center" width="100%" colspan="2">
+    <td align="center" width="33%">
       <img src="screenshots/config.png" alt="Configuration" /><br/>
       <b>Configuration</b><br/>
-      <sub>6 AI providers — API key stored in OS keychain, never in plaintext</sub>
+      <sub>6 AI providers — API keys stored securely in the system keychain</sub>
     </td>
   </tr>
 </table>
