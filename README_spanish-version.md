@@ -21,6 +21,48 @@ Debuggle es una aplicación de escritorio para desarrolladores que quieren **ent
 
 ---
 
+## Capturas de pantalla
+
+<table align="center">
+  <tr>
+    <td align="center" width="33%">
+      <img src="screenshots/pantalla-principal.png" alt="Analizar" /><br/>
+      <b>Analizar</b><br/>
+      <sub>Pega cualquier error y desglósalo en 3 niveles simultáneamente</sub>
+    </td>
+    <td align="center" width="33%">
+      <img src="screenshots/chat.png" alt="Chat" /><br/>
+      <b>Chat</b><br/>
+      <sub>Pantalla de conversación para interactuar con la IA</sub>
+    </td>
+    <td align="center" width="33%">
+      <img src="screenshots/guide-es.png" alt="Guía" /><br/>
+      <b>Guía</b><br/>
+      <sub>Cada error depurado se guarda localmente con su lenguaje y nivel</sub>
+    </td>
+  </tr>
+
+  <tr>
+    <td align="center" width="33%">
+      <img src="screenshots/guide-es-detalle.png" alt="Detalle del repositorio" /><br/>
+      <b>Detalle</b><br/>
+      <sub>Análisis completo con solución sugerida y log original</sub>
+    </td>
+    <td align="center" width="33%">
+      <img src="screenshots/patrones.png" alt="Patrones" /><br/>
+      <b>Patrones</b><br/>
+      <sub>Identifica errores y lenguajes más frecuentes con el tiempo</sub>
+    </td>
+    <td align="center" width="33%">
+      <img src="screenshots/configuracion.png" alt="Configuración" /><br/>
+      <b>Configuración</b><br/>
+      <sub>6 proveedores de IA — API keys seguras en el sistema</sub>
+    </td>
+  </tr>
+</table>
+
+---
+
 ## Funcionalidades
 
 ### 🔍 Analizar
