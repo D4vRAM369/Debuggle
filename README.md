@@ -23,7 +23,7 @@ Debuggle is a desktop app for developers who want to **understand** their errors
 
 ---
 
-## Screnshots
+## Screenshots
 
 <table align="center">
   <tr>
