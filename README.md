@@ -10,6 +10,7 @@
 [![Codex](https://img.shields.io/badge/Assistant-Codex-111827)](https://openai.com/)
 [![Electron](https://img.shields.io/badge/Electron-33-47848F?logo=electron)](https://electronjs.org)
 [![React](https://img.shields.io/badge/React-18-61DAFB?logo=react)](https://react.dev)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/D4vRAM369/Debuggle)
 
 [🇪🇸🇮🇨 Versión en español](README_spanish-version.md)
 
